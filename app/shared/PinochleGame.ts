@@ -1,4 +1,4 @@
-import { PinochleRound } from "./PinochleRound";
+import { PinochleRound } from "./PinochleRound.ts";
 
 export class PinochleGame {
   rounds: PinochleRound[];
