@@ -3,47 +3,30 @@ import { PinochleRound } from "./PinochleRound.ts";
 export class PinochleGame {
   rounds: PinochleRound[];
   currentRoundIndex: number;
+  teamAName: string;
+  teamBName: string;
 
-  constructor() {
+  constructor(options?: { teamAName?: string; teamBName?: string }) {
+    const { teamAName = "Awesome Team A", teamBName = "Fabulous Team B" } =
+      options || {};
+    this.teamAName = teamAName;
+    this.teamBName = teamBName;
     this.rounds = [];
     for (let i = 0; i < 8; i++) {
-      this.rounds.push(new PinochleRound());
+      this.rounds.push(new PinochleRound({ roundComplete: true }));
     }
     this.currentRoundIndex = 0;
   }
 
-  startNextRound() {
-    if (this.isGameOver()) {
-      throw new Error("The game is over, no more rounds can be played");
-    }
-    this.rounds[this.currentRoundIndex];
-    this.currentRoundIndex++;
-  }
-
-  isGameOver() {
-    return this.currentRoundIndex >= this.rounds.length;
-  }
-
   getTeamAScore(upToRound: number) {
-    let score = 0;
-    for (let i = 0; i < Math.min(this.currentRoundIndex, upToRound); i++) {
-      score += this.rounds[i].teamAMeldScore + this.rounds[i].teamATrickScore;
-    }
-    return score;
+    return this.rounds
+      .filter((_, index) => index <= upToRound)
+      .reduce((acc, round) => acc + round.teamATotalScore, 0);
   }
 
   getTeamBScore(upToRound: number) {
-    let score = 0;
-    for (let i = 0; i < Math.min(this.currentRoundIndex, upToRound); i++) {
-      score += this.rounds[i].teamBMeldScore + this.rounds[i].teamBTrickScore;
-    }
-    return score;
-  }
-
-  clone() {
-    return Object.assign(
-      Object.create(Object.getPrototypeOf(this)),
-      JSON.parse(JSON.stringify(this)),
-    );
+    return this.rounds
+      .filter((_, index) => index <= upToRound)
+      .reduce((acc, round) => acc + round.teamBTotalScore, 0);
   }
 }
