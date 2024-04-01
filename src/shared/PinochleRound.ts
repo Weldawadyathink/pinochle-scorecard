@@ -25,8 +25,10 @@ export class PinochleRound {
       teamBTrickScore = 0,
       bid = 25,
       teamWithBid = "a",
-      roundComplete = false,
+      roundComplete = true,
     } = options || {};
+    // Originally, going set was not calculated if the round was not complete.
+    // I changed this to calculate true score always by default.
     this.teamAMeldScore = teamAMeldScore;
     this.teamATrickScore = teamATrickScore;
     this.teamBMeldScore = teamBMeldScore;

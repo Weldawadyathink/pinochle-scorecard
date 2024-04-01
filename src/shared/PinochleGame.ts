@@ -12,10 +12,13 @@ export class PinochleGame {
     this.teamAName = teamAName;
     this.teamBName = teamBName;
     this.rounds = [];
-    for (let i = 0; i < 8; i++) {
-      this.rounds.push(new PinochleRound({ roundComplete: true }));
-    }
     this.currentRoundIndex = 0;
+    this.rounds.push(new PinochleRound());
+  }
+
+  newRound() {
+    this.rounds.push(new PinochleRound())
+    this.currentRoundIndex++;
   }
 
   getTeamAScore(upToRound: number) {

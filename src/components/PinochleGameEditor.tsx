@@ -8,6 +8,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 export interface PinochleGameEditorProps {
   data: PinochleGame;
@@ -18,15 +20,30 @@ export function PinochleGameEditor({
   data,
   onChange,
 }: PinochleGameEditorProps) {
+  const [openNewRound, setOpenNewRound] = useState(false);
+
   function setRound(index: number, roundData: PinochleRound) {
     const temp = cloneDeep(data);
     temp.rounds[index] = roundData;
     onChange(temp);
   }
 
+  function newRound() {
+    const temp = cloneDeep(data);
+    temp.newRound();
+    setOpenNewRound(true);
+    onChange(temp);
+  }
+
+  if (openNewRound) {
+    setOpenNewRound(false);
+  }
+
+  console.log(data.currentRoundIndex);
+
   return (
     <>
-      <Accordion type="single" collapsible>
+      <Accordion type="single">
         {data.rounds.map((round, index) => {
           const roundNumber = index + 1;
           const teamACumulativeScore = data.getTeamAScore(index);
@@ -47,6 +64,7 @@ export function PinochleGameEditor({
           );
         })}
       </Accordion>
+      <Button onClick={newRound}>New Round</Button>
     </>
   );
 }
