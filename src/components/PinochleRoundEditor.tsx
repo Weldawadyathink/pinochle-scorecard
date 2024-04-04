@@ -20,7 +20,7 @@ export function PinochleRoundEditor({
 
   function setInt(path: string, value: string) {
     const temp = cloneDeep(data);
-    set(temp, path, parseInt(value));
+    set(temp, path, parseInt(value, 10));
     onChange(temp);
   }
 

@@ -39,8 +39,6 @@ export function PinochleGameEditor({
     setOpenNewRound(false);
   }
 
-  console.log(data.currentRoundIndex);
-
   return (
     <>
       <Accordion type="single">
