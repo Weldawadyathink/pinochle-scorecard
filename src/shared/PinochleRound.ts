@@ -6,8 +6,8 @@ export class PinochleRound {
   bid: number;
   teamWithBid: "a" | "b";
   roundComplete: boolean;
-  _teamAHasTakenTrick: boolean;
-  _teamBHasTakenTrick: boolean;
+  overrideTeamAHasTakenTrick: boolean;
+  overrideTeamBHasTakenTrick: boolean;
 
   constructor(options?: {
     teamAMeldScore?: number;
@@ -36,31 +36,23 @@ export class PinochleRound {
     this.bid = bid;
     this.teamWithBid = teamWithBid;
     this.roundComplete = roundComplete;
-    this._teamAHasTakenTrick = false;
-    this._teamBHasTakenTrick = false;
+    this.overrideTeamAHasTakenTrick = false;
+    this.overrideTeamBHasTakenTrick = false;
   }
 
   // Team must take trick to not go set, but trick doesn't need to have points
   get teamAHasTakenTrick() {
-    if (this._teamAHasTakenTrick) {
+    if (this.overrideTeamAHasTakenTrick) {
       return true;
     }
     return this.teamATrickScore !== 0;
   }
 
   get teamBHasTakenTrick() {
-    if (this._teamBHasTakenTrick) {
+    if (this.overrideTeamBHasTakenTrick) {
       return true;
     }
     return this.teamBTrickScore !== 0;
-  }
-
-  set teamAHasTakenTrick(newVal) {
-    this._teamAHasTakenTrick = newVal;
-  }
-
-  set teamBHasTakenTrick(newVal) {
-    this._teamBHasTakenTrick = newVal;
   }
 
   get teamATotalScore() {
@@ -105,10 +97,21 @@ export class PinochleRound {
     return false;
   }
 
-  clone() {
-    return Object.assign(
-      Object.create(Object.getPrototypeOf(this)),
-      JSON.parse(JSON.stringify(this)),
-    );
+  toJSON() {
+    return {
+      teamAMeldScore: this.teamAMeldScore,
+      teamATrickScore: this.teamATrickScore,
+      teamBMeldScore: this.teamBMeldScore,
+      teamBTrickScore: this.teamBTrickScore,
+      bid: this.bid,
+      teamWithBid: this.teamWithBid,
+      roundComplete: this.roundComplete,
+      overrideTeamAHasTakenTrick: this.overrideTeamAHasTakenTrick,
+      overrideTeamBHasTakenTrick: this.overrideTeamBHasTakenTrick,
+    };
+  }
+
+  static fromObject(obj: any) {
+    return new PinochleRound(obj);
   }
 }

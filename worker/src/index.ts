@@ -143,7 +143,7 @@ export class WebSocketHibernationServer {
 		});
 	}
 
-	async webSocketMessage(ws: WebSocket, message: ArrayBuffer | string) {
+	webSocketMessage(ws: WebSocket, message: ArrayBuffer | string) {
 		let data: StandardMessage;
 		try {
 			if (message instanceof ArrayBuffer) {
@@ -154,6 +154,7 @@ export class WebSocketHibernationServer {
 				data = JSON.parse(message);
 			}
 		} catch {
+			console.log(["Error parsing message", message]);
 			ws.send(
 				JSON.stringify({
 					error: "Could not parse JSON from message",
@@ -164,9 +165,11 @@ export class WebSocketHibernationServer {
 		}
 
 		if (data.messageType === "gameUpdate") {
+			console.log("Sending game update");
 			const sockets = this.state.getWebSockets();
 			sockets.forEach((socket) => socket.send(JSON.stringify(data)));
 		} else {
+			console.log("Unknown message type");
 			ws.send(
 				JSON.stringify({
 					error: "Could not find a valid messageType",
