@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+dependencies:
+  itty-router:
+    specifier: ^5.0.9
+    version: 5.0.9
+
 devDependencies:
   '@cloudflare/workers-types':
     specifier: ^4.20240403.0
@@ -531,6 +536,10 @@ packages:
     resolution: {integrity: sha512-41Cifkg6e8TylSpdtTpeLVMqvSBEVzTttHvERD741+pnZ8ANv0004MRL43QKPDlK9cGvNp6NZWZUBlbGXYxxng==}
     engines: {node: '>=0.12.0'}
     dev: true
+
+  /itty-router@5.0.9:
+    resolution: {integrity: sha512-rUsR9s8S9MQjU7qpTPdydh8gVsocIx4KBDmxCltivqiS3u/UvhDzZO2kvuFMEmx7auvh8mt/GEI2ED25Tdii+g==}
+    dev: false
 
   /magic-string@0.25.9:
     resolution: {integrity: sha512-RmF0AsMzgt25qzqqLc1+MbHmhdx0ojF2Fvs4XnOqz2ZOBXzzkEwc/dJQZCYHAn7v1jbVOjAZfK8msRn4BxO4VQ==}
