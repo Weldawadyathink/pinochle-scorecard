@@ -4,6 +4,9 @@ import { PinochleGameEditor } from "./components/PinochleGameEditor";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import { fetcher } from "itty-fetcher";
 import { Button } from "./components/ui/button";
+import { ConnectToGame } from "./components/ConnectToGame";
+import { Copy } from "lucide-react";
+import clipboard from "clipboardy";
 
 export default function App() {
   const [data, setData] = useState(new PinochleGame());
@@ -30,6 +33,17 @@ export default function App() {
     [ReadyState.UNINSTANTIATED]: "Uninstantiated",
   }[readyState];
 
+  let gameSharedStatus: "Private" | "Shared" | "Connecting";
+  if (socketUrl === "") {
+    gameSharedStatus = "Private";
+  } else {
+    if (connectionStatus === "Open") {
+      gameSharedStatus = "Shared";
+    } else {
+      gameSharedStatus = "Connecting";
+    }
+  }
+
   function setNewGameState(state: PinochleGame) {
     const serialized = JSON.stringify(state);
     sendMessage(
@@ -42,15 +56,16 @@ export default function App() {
     setData(state);
   }
 
+  const apiUrl =
+    import.meta.env.MODE === "development"
+      ? "http://localhost:8787"
+      : "https://api.pinochle.spenserbushey.com";
+  const websocketUrl =
+    import.meta.env.MODE === "development"
+      ? "ws://localhost:8787"
+      : "wss://api.pinochle.spenserbushey.com";
+
   function openNewGame() {
-    const apiUrl =
-      import.meta.env.MODE === "development"
-        ? "http://localhost:8787"
-        : "https://api.pinochle.spenserbushey.com";
-    const websocketUrl =
-      import.meta.env.MODE === "development"
-        ? "ws://localhost:8787"
-        : "wss://api.pinochle.spenserbushey.com";
     const api = fetcher({ base: apiUrl });
     api
       .get("/v1/game/new")
@@ -61,15 +76,40 @@ export default function App() {
       );
   }
 
+  function openGameName(name: string) {
+    setSocketUrl(`${websocketUrl}/v1/game/connect/${name}`);
+  }
+
   return (
     <div className="container max-w-2xl mx-auto p-6">
-      <div className="flex flex-col">
-        <span>{connectionStatus}</span>
-        <span>{socketUrl}</span>
-        <span>{gameName}</span>
-        <Button onClick={openNewGame}>New Game</Button>
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-row gap-4 text-center">
+          {gameSharedStatus === "Private" && (
+            <>
+              <span>Private Game</span>
+              <ConnectToGame onSetGameName={(name) => openGameName(name)} />
+              <Button onClick={openNewGame}>Share this game</Button>
+            </>
+          )}
+          {gameSharedStatus === "Connecting" && <span>Connecting...</span>}
+          {gameSharedStatus === "Shared" && (
+            <>
+              <span>Shared Game</span>
+              <span>{gameName}</span>
+              <Button
+                type="submit"
+                size="sm"
+                className="px-3"
+                onClick={() => clipboard.writeSync(gameName)}
+              >
+                <span className="sr-only">Copy</span>
+                <Copy className="h-4 w-4" />
+              </Button>
+            </>
+          )}
+        </div>
+        <PinochleGameEditor data={data} onChange={(d) => setNewGameState(d)} />
       </div>
-      <PinochleGameEditor data={data} onChange={(d) => setNewGameState(d)} />
     </div>
   );
 }

@@ -94,12 +94,17 @@ export class WebSocketHibernationServer {
     const upgradeHeader = request.headers.get("Upgrade");
     if (!upgradeHeader || upgradeHeader !== "websocket") {
       // TODO: Return current game state without websocket upgrade
-      return new Response("Durable Object expected Upgrade: websocket", {
-        status: 426,
-        headers: {
-          "access-control-allow-origin": "*",
+      return new Response(
+        JSON.stringify({
+          gameData: "Game data will be here",
+        }),
+        {
+          status: 200,
+          headers: {
+            "access-control-allow-origin": "*",
+          },
         },
-      });
+      );
     }
 
     const [client, server] = Object.values(new WebSocketPair());
