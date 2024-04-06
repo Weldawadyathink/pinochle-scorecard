@@ -9,3 +9,8 @@ class_name = "WebSocketHibernationServer"
 [[migrations]]
 tag = "v1"
 new_classes = ["WebSocketHibernationServer"]
+
+[[ d1_databases ]]
+binding = "DB"
+database_name = "pinochle_durable_object_directory"
+database_id = "6906ddda-deaf-472b-8cc7-9ef7b9aa6150"

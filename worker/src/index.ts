@@ -1,190 +1,157 @@
-import { AutoRouter, error, json, withParams } from "itty-router";
+import { AutoRouter, error, json, withParams, cors } from "itty-router";
+import { drizzle } from "drizzle-orm/d1";
+import { eq, sql } from "drizzle-orm";
+import { game } from "./schema";
+import { generate } from "project-namer";
 
 export interface Env {
-	PINOCHLE_DURABLE_OBJECT: DurableObjectNamespace;
+  PINOCHLE_DURABLE_OBJECT: DurableObjectNamespace;
+  DB: D1Database;
 }
 
 interface StandardMessage {
-	messageType: "gameUpdate"; // Future values to come for other controls
-	payload?: string; // JSON representation of pinochle object
-	senderId?: string; // arbitrary identifier to determine which client sent the update. UUID4 is recommended.
+  messageType: "gameUpdate"; // Future values to come for other controls
+  payload?: string; // JSON representation of pinochle object
+  senderId?: string; // arbitrary identifier to determine which client sent the update. UUID4 is recommended.
 }
 
-const router = AutoRouter();
+const { preflight, corsify } = cors();
+const router = AutoRouter({ before: [preflight], finally: [corsify] });
 
 router
-	.all("*", withParams)
-	.all("/v1/game/watch/:id", ({ id }, { env }) => {
-		// TODO: make human readable "game codes" (like docker does with names)
-		// Allow users to connect with these game codes instead of id
-		const d_obj: DurableObjectId = env.PINOCHLE_DURABLE_OBJECT.idFromString(id);
-		const stub: DurableObjectStub = env.PINOCHLE_DURABLE_OBJECT.get(d_obj);
-		const doRequest = new Request("http://game/watch");
-		return stub.fetch(doRequest);
-	})
-	.all("/v1/game/new", (_request, { env }) => {
-		console.log(env);
-		const id = env.PINOCHLE_DURABLE_OBJECT.newUniqueId();
-		console.log(id.toString());
-		return { id: id.toString() };
-	})
-	.all("/v1/game/control/:id", (request, { env }) => {
-		const objId: DurableObjectId = env.PINOCHLE_DURABLE_OBJECT.idFromString(
-			request.id,
-		);
-		const stub: DurableObjectStub = env.PINOCHLE_DURABLE_OBJECT.get(objId);
-		const doRequest = new Request("http://game/control");
-		if (request.headers.get("Upgrade")) {
-			doRequest.headers.set(
-				"Upgrade",
-				request.headers.get("Upgrade") as string,
-			);
-		}
-		console.log(`Game control activated for durable object ${request.id}`);
-		return stub.fetch(doRequest);
-	});
+  .all("/v1/game/new", async (_request, env) => {
+    const id = env.PINOCHLE_DURABLE_OBJECT.newUniqueId().toString();
+    const db = drizzle(env.DB);
+
+    async function getName() {
+      const possibleName = generate({ number: true }).dashed.toLowerCase();
+      console.log(`Generated name ${possibleName}, testing for collisions.`);
+      const results = await db
+        .select({ name: game.name })
+        .from(game)
+        .where(eq(game.name, possibleName));
+      if (results.length > 0) {
+        console.log("Name collision, generating new name.");
+        return getName();
+      }
+      return possibleName;
+    }
+
+    const name = await getName();
+    await db.insert(game).values({
+      id: id,
+      name: name,
+      last_access: Date.now().toString(),
+    });
+    return { name: name };
+  })
+
+  .all("/v1/game/connect/:name", async (request, env) => {
+    const db = drizzle(env.DB);
+    const name = request.name.toLowerCase();
+    const results = await db
+      .update(game)
+      .set({ last_access: Date.now().toString() })
+      .where(eq(game.name, name))
+      .returning({ id: game.id });
+    if (results.length === 0) {
+      return new Response("Game name not found", { status: 404 });
+    }
+    const [{ id }] = results;
+    const objId = env.PINOCHLE_DURABLE_OBJECT.idFromString(id);
+    const stub: DurableObjectStub = env.PINOCHLE_DURABLE_OBJECT.get(objId);
+    const doRequest = new Request("https://game/");
+    if (request.headers.get("Upgrade")) {
+      doRequest.headers.set(
+        "Upgrade",
+        request.headers.get("Upgrade") as string,
+      );
+    }
+    console.log(`Game control activated for durable object ${request.id}`);
+    return stub.fetch(doRequest);
+  });
 
 export default {
-	async fetch(
-		request: Request,
-		env: Env,
-		ctx: ExecutionContext,
-	): Promise<Response> {
-		return router.fetch(request, { env, ctx }).then(json).catch(error);
-	},
+  async fetch(
+    request: Request,
+    env: Env,
+    ctx: ExecutionContext,
+  ): Promise<Response> {
+    return router.fetch(request, env, ctx).then(json).catch(error);
+  },
 };
 
 export class WebSocketHibernationServer {
-	state: DurableObjectState;
+  state: DurableObjectState;
 
-	constructor(state: DurableObjectState, env: Env) {
-		this.state = state;
-	}
+  constructor(state: DurableObjectState, env: Env) {
+    this.state = state;
+  }
 
-	// Handle HTTP requests from clients.
-	async fetch(request: Request): Promise<Response> {
-		if (request.url === "http://game/control") {
-			const upgradeHeader = request.headers.get("Upgrade");
-			if (!upgradeHeader || upgradeHeader !== "websocket") {
-				// TODO: Return current game state without websocket upgrade
-				return new Response("Durable Object expected Upgrade: websocket", {
-					status: 426,
-				});
-			}
+  // Handle HTTP requests from clients.
+  async fetch(request: Request): Promise<Response> {
+    console.log("Processing request in durable object");
+    const upgradeHeader = request.headers.get("Upgrade");
+    if (!upgradeHeader || upgradeHeader !== "websocket") {
+      // TODO: Return current game state without websocket upgrade
+      return new Response("Durable Object expected Upgrade: websocket", {
+        status: 426,
+        headers: {
+          "access-control-allow-origin": "*",
+        },
+      });
+    }
 
-			const [client, server] = Object.values(new WebSocketPair());
-			this.state.acceptWebSocket(server, ["read_write"]);
-			return new Response(null, {
-				status: 101,
-				webSocket: client,
-			});
-		}
+    const [client, server] = Object.values(new WebSocketPair());
+    this.state.acceptWebSocket(server);
+    return new Response(null, {
+      status: 101,
+      webSocket: client,
+    });
+  }
 
-		if (request.url === "http://game/watch") {
-			const upgradeHeader = request.headers.get("Upgrade");
-			if (!upgradeHeader || upgradeHeader !== "websocket") {
-				// TODO: Return current game state without websocket upgrade
-				return new Response("Durable Object expected Upgrade: websocket", {
-					status: 426,
-				});
-			}
+  webSocketMessage(ws: WebSocket, message: ArrayBuffer | string) {
+    let data: StandardMessage;
+    try {
+      if (message instanceof ArrayBuffer) {
+        const textDecoder = new TextDecoder("utf-8");
+        const decoded = textDecoder.decode(message);
+        data = JSON.parse(decoded);
+      } else {
+        data = JSON.parse(message);
+      }
+    } catch {
+      console.log(["Error parsing message", message]);
+      ws.send(
+        JSON.stringify({
+          error: "Could not parse JSON from message",
+          originalMessage: message,
+        }),
+      );
+      return;
+    }
 
-			const [client, server] = Object.values(new WebSocketPair());
-			this.state.acceptWebSocket(server, ["read_only"]);
-			return new Response(null, {
-				status: 101,
-				webSocket: client,
-			});
-		}
+    if (data.messageType === "gameUpdate") {
+      console.log("Sending game update");
+      const sockets = this.state.getWebSockets();
+      sockets.forEach((socket) => socket.send(JSON.stringify(data)));
+    } else {
+      console.log("Unknown message type");
+      ws.send(
+        JSON.stringify({
+          error: "Could not find a valid messageType",
+          originalMessage: data,
+        }),
+      );
+    }
+  }
 
-		// 		if (request.url.endsWith("/websocket")) {
-		// 			// Expect to receive a WebSocket Upgrade request.
-		// 			// If there is one, accept the request and return a WebSocket Response.
-		// 			const upgradeHeader = request.headers.get("Upgrade");
-		// 			if (!upgradeHeader || upgradeHeader !== "websocket") {
-		// 				return new Response("Durable Object expected Upgrade: websocket", {
-		// 					status: 426,
-		// 				});
-		// 			}
-
-		// 			// Creates two ends of a WebSocket connection.
-		// 			const webSocketPair = new WebSocketPair();
-		// 			const [client, server] = Object.values(webSocketPair);
-
-		// 			// Calling `acceptWebSocket()` tells the runtime that this WebSocket is to begin terminating
-		// 			// request within the Durable Object. It has the effect of "accepting" the connection,
-		// 			// and allowing the WebSocket to send and receive messages.
-		// 			// Unlike `ws.accept()`, `state.acceptWebSocket(ws)` informs the Workers Runtime that the WebSocket
-		// 			// is "hibernatable", so the runtime does not need to pin this Durable Object to memory while
-		// 			// the connection is open. During periods of inactivity, the Durable Object can be evicted
-		// 			// from memory, but the WebSocket connection will remain open. If at some later point the
-		// 			// WebSocket receives a message, the runtime will recreate the Durable Object
-		// 			// (run the `constructor`) and deliver the message to the appropriate handler.
-		// 			this.state.acceptWebSocket(server);
-
-		// 			return new Response(null, {
-		// 				status: 101,
-		// 				webSocket: client,
-		// 			});
-		// 		} else if (request.url.endsWith("/getCurrentConnections")) {
-		// 			let numConnections: number = this.state.getWebSockets().length;
-		// 			if (numConnections == 1) {
-		// 				return new Response(
-		// 					`There is ${numConnections} WebSocket client connected to this Durable Object instance.`,
-		// 				);
-		// 			}
-		// 			return new Response(
-		// 				`There are ${numConnections} WebSocket clients connected to this Durable Object instance.`,
-		// 			);
-		// 		}
-
-		return new Response("Could not find an appropriate response", {
-			status: 404,
-		});
-	}
-
-	webSocketMessage(ws: WebSocket, message: ArrayBuffer | string) {
-		let data: StandardMessage;
-		try {
-			if (message instanceof ArrayBuffer) {
-				const textDecoder = new TextDecoder("utf-8");
-				const decoded = textDecoder.decode(message);
-				data = JSON.parse(decoded);
-			} else {
-				data = JSON.parse(message);
-			}
-		} catch {
-			console.log(["Error parsing message", message]);
-			ws.send(
-				JSON.stringify({
-					error: "Could not parse JSON from message",
-					originalMessage: message,
-				}),
-			);
-			return;
-		}
-
-		if (data.messageType === "gameUpdate") {
-			console.log("Sending game update");
-			const sockets = this.state.getWebSockets();
-			sockets.forEach((socket) => socket.send(JSON.stringify(data)));
-		} else {
-			console.log("Unknown message type");
-			ws.send(
-				JSON.stringify({
-					error: "Could not find a valid messageType",
-					originalMessage: data,
-				}),
-			);
-		}
-	}
-
-	async webSocketClose(
-		ws: WebSocket,
-		code: number,
-		reason: string,
-		wasClean: boolean,
-	) {
-		ws.close(code, "Durable Object is closing WebSocket");
-	}
+  async webSocketClose(
+    ws: WebSocket,
+    code: number,
+    reason: string,
+    wasClean: boolean,
+  ) {
+    ws.close(code, "Durable Object is closing WebSocket");
+  }
 }
