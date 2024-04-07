@@ -1,19 +1,29 @@
 import { PinochleRound } from "./PinochleRound.ts";
+import { generate } from "project-namer";
 
 export class PinochleGame {
   rounds: PinochleRound[];
   currentRoundIndex: number;
   teamAName: string;
   teamBName: string;
+  gameName: string;
 
-  constructor(options?: { teamAName?: string; teamBName?: string }) {
-    const { teamAName = "Awesome Team A", teamBName = "Fabulous Team B" } =
-      options || {};
+  constructor(options?: {
+    teamAName?: string;
+    teamBName?: string;
+    gameName?: string;
+  }) {
+    const {
+      teamAName = "Awesome Team A",
+      teamBName = "Fabulous Team B",
+      gameName = generate().dashed.toLowerCase(),
+    } = options || {};
     this.teamAName = teamAName;
     this.teamBName = teamBName;
     this.rounds = [];
     this.currentRoundIndex = 0;
     this.rounds.push(new PinochleRound());
+    this.gameName = gameName;
   }
 
   newRound() {
@@ -39,16 +49,21 @@ export class PinochleGame {
       currentRoundIndex: this.currentRoundIndex,
       teamAName: this.teamAName,
       teamBName: this.teamBName,
+      gameName: this.gameName,
     };
   }
 
   static fromJSON(json: any) {
-    const obj = JSON.parse(json)
+    const obj =
+      typeof json === "string" || json instanceof String
+        ? JSON.parse(json as string)
+        : json;
     let game = new PinochleGame();
     game.rounds = obj.rounds.map((round: any) => new PinochleRound(round));
     game.currentRoundIndex = obj.currentRoundIndex;
     game.teamAName = obj.teamAName;
     game.teamBName = obj.teamBName;
+    game.gameName = obj.gameName;
     return game;
   }
 }
