@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { animated, useTrail, useSpring } from "@react-spring/web";
 
 export interface PinochleGameEditorProps {
   data: PinochleGame;
@@ -39,6 +40,11 @@ export function PinochleGameEditor({
     setOpenNewRound(false);
   }
 
+  const trails = useTrail(data.rounds.length, {
+    from: { x: 100, opacity: 0 },
+    to: { x: 0, opacity: 1 },
+  });
+
   return (
     <>
       <Accordion type="single">
@@ -47,18 +53,20 @@ export function PinochleGameEditor({
           const teamACumulativeScore = data.getTeamAScore(index);
           const teamBCumulativeScore = data.getTeamBScore(index);
           return (
-            <AccordionItem value={`round-${index}`} key={`round-${index}`}>
-              <AccordionTrigger>
-                Round {roundNumber} | Team A: {teamACumulativeScore} | Team B:{" "}
-                {teamBCumulativeScore}
-              </AccordionTrigger>
-              <AccordionContent>
-                <PinochleRoundEditor
-                  data={round}
-                  onChange={(d) => setRound(index, d)}
-                />
-              </AccordionContent>
-            </AccordionItem>
+            <animated.div key={index} style={trails[index]}>
+              <AccordionItem value={`round-${index}`} key={`round-${index}`}>
+                <AccordionTrigger>
+                  Round {roundNumber} | Team A: {teamACumulativeScore} | Team B:{" "}
+                  {teamBCumulativeScore}
+                </AccordionTrigger>
+                <AccordionContent>
+                  <PinochleRoundEditor
+                    data={round}
+                    onChange={(d) => setRound(index, d)}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            </animated.div>
           );
         })}
       </Accordion>

@@ -7,6 +7,7 @@ export class PinochleGame {
   teamAName: string;
   teamBName: string;
   gameName: string;
+  uuid: string; // locally unique, not saved when serialized
 
   constructor(options?: {
     teamAName?: string;
@@ -24,6 +25,7 @@ export class PinochleGame {
     this.currentRoundIndex = 0;
     this.rounds.push(new PinochleRound());
     this.gameName = gameName;
+    this.uuid = crypto.randomUUID();
   }
 
   newRound() {
