@@ -1,7 +1,7 @@
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { PinochleGame } from "@/shared/PinochleGame";
 import { Button } from "@/components/ui/button";
-import { Trash2, SquarePlus } from "lucide-react";
+import { Trash2, SquarePlus, RadioTower } from "lucide-react";
 import { animated, useTrail } from "@react-spring/web";
 import {
   Dialog,
@@ -14,12 +14,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { fetcher } from "itty-fetcher";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ConnectToGameProps {
   onSetGameName: (name: string) => void;
+  children: React.ReactNode;
 }
 
-function ConnectToGame({ onSetGameName }: ConnectToGameProps) {
+function ConnectToGame({ onSetGameName, children }: ConnectToGameProps) {
   const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isGameNotFound, setIsGameNotFound] = useState(false);
@@ -50,9 +57,7 @@ function ConnectToGame({ onSetGameName }: ConnectToGameProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>Connect to a game</Button>
-      </DialogTrigger>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Game Connection</DialogTitle>
@@ -78,9 +83,10 @@ interface GameListProps {
   games: Array<PinochleGame>;
   onChange: (games: Array<PinochleGame>) => void;
   openGame: (index: number) => void; // Returns index of user selected game
+  onSetGameName: ConnectToGameProps["onSetGameName"]
 }
 
-function GameList({ games, onChange, openGame }: GameListProps) {
+function GameList({ games, onChange, openGame, onSetGameName }: GameListProps) {
   function deleteGame(index: number) {
     let temp = games.filter((_, i) => i !== index);
     if (temp.length < 1) {
@@ -107,14 +113,37 @@ function GameList({ games, onChange, openGame }: GameListProps) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-row gap-6">
-        <h1 className="m-auto text-2xl">My Games</h1>
-        <Button
-          onClick={addNewGame}
-          variant="link"
-          className="hover:text-blue-500"
-        >
-          <SquarePlus />
-        </Button>
+        <TooltipProvider>
+          <h1 className="m-auto text-2xl">My Games</h1>
+
+          <Tooltip>
+            <TooltipTrigger>
+              <ConnectToGame onSetGameName={onSetGameName}>
+                <Button variant="link" className="hover:text-green-500">
+                  <RadioTower />
+                </Button>
+              </ConnectToGame>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Connect to a game</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger>
+              <Button
+                onClick={addNewGame}
+                variant="link"
+                className="hover:text-blue-500"
+              >
+                <SquarePlus />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Create a new game</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       {games.map((game, index) => (
@@ -166,11 +195,11 @@ export function Sidebar({
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent side="left">
-        <ConnectToGame onSetGameName={setGameNameAndClose} />
         <GameList
           games={games}
           onChange={onChange}
           openGame={openGameAndClose}
+          onSetGameName={setGameNameAndClose}
         />
       </SheetContent>
     </Sheet>
