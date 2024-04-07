@@ -18,24 +18,31 @@ export function MainGameEditor({
   onGameDataChange,
   sharedGameName,
 }: MainGameEditorProps) {
+  // TODO: Fetch game state from server when given a sharedGameName
+  const [connectToSocket, setConnectToSocket] = useState(!!sharedGameName);
   const [appId] = useState(crypto.randomUUID());
   const [socketUrl, setSocketUrl] = useState(
     import.meta.env.MODE === "development"
       ? `ws://localhost:8787/v1/game/connect/${sharedGameName}`
       : `wss://api.pinochle.spenserbushey.com/v1/game/connect/${sharedGameName}`,
   );
-  const { sendMessage, readyState } = useWebSocket(socketUrl, {
-    onMessage: (msg) => {
-      console.log(["Received websocket message", msg]);
-      const data = JSON.parse(msg.data);
-      const senderId = data.senderId;
-      if (senderId !== appId) {
-        const game = PinochleGame.fromJSON(data.payload);
-        onGameDataChange(game);
-      }
+  const { sendMessage, readyState } = useWebSocket(
+    socketUrl,
+    {
+      onMessage: (msg) => {
+        console.log(["Received websocket message", msg]);
+        const data = JSON.parse(msg.data);
+        const senderId = data.senderId;
+        if (senderId !== appId) {
+          const game = PinochleGame.fromJSON(data.payload);
+          onGameDataChange(game);
+        }
+      },
     },
-  });
-  const gameName = socketUrl.split("/").pop() || "No game connected";
+    connectToSocket,
+  );
+
+  const gameName: string | null = socketUrl.split("/").pop() || null;
 
   const connectionStatus = {
     [ReadyState.CONNECTING]: "Connecting",
@@ -46,7 +53,7 @@ export function MainGameEditor({
   }[readyState];
 
   let gameSharedStatus: "Private" | "Shared" | "Connecting";
-  if (socketUrl === "") {
+  if (!connectToSocket) {
     gameSharedStatus = "Private";
   } else {
     if (connectionStatus === "Open") {
@@ -77,15 +84,12 @@ export function MainGameEditor({
       ? "ws://localhost:8787"
       : "wss://api.pinochle.spenserbushey.com";
 
-  function openNewGame() {
+  function shareGame() {
     const api = fetcher({ base: apiUrl });
-    api
-      .get("/v1/game/new")
-      .then((response) =>
-        setSocketUrl(
-          `${websocketUrl}/v1/game/connect/${(response as any).name}`,
-        ),
-      );
+    api.get("/v1/game/new").then((response) => {
+      setSocketUrl(`${websocketUrl}/v1/game/connect/${(response as any).name}`);
+      setConnectToSocket(true);
+    });
   }
 
   return (
@@ -95,7 +99,7 @@ export function MainGameEditor({
           {gameSharedStatus === "Private" && (
             <>
               <span className="my-auto">Private Game</span>
-              <Button onClick={openNewGame}>Share this game</Button>
+              <Button onClick={shareGame}>Share this game</Button>
             </>
           )}
           {gameSharedStatus === "Connecting" && <span>Connecting...</span>}
@@ -107,7 +111,7 @@ export function MainGameEditor({
                 type="submit"
                 size="sm"
                 className="px-3"
-                onClick={() => clipboard.write(gameName)}
+                onClick={() => clipboard.write(gameName || "")}
               >
                 <span className="sr-only">Copy</span>
                 <Copy className="h-4 w-4" />

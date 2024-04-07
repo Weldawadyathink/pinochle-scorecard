@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { MainGameEditor } from "@/components/MainGameEditor";
 import { PinochleGame } from "@/shared/PinochleGame";
 import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
+import { ConnectToGame } from "./components/ConnectToGame";
 
 export default function App() {
   const [gameEditorKey, setGameEditorKey] = useState(crypto.randomUUID());
   const [currentGameIndex, setCurrentGameIndex] = useState(0);
-  const [connectToGameName, setConnectToGameName] = useState<string | null>(
-    null,
+  const [connectToGameName, setConnectToGameName] = useState<string | undefined>(
+    undefined,
   );
   const [allGames, setAllGames] = useState<Array<PinochleGame>>(() => {
     const savedGames = localStorage.getItem("PinochleGames");
@@ -42,6 +44,12 @@ export default function App() {
   function openGame(index: number) {
     setCurrentGameIndex(index);
     setGameEditorKey(crypto.randomUUID());
+    setConnectToGameName(undefined);
+  }
+
+  function connectToGame(name: string) {
+    setConnectToGameName(name);
+    setGameEditorKey(crypto.randomUUID());
   }
 
   useEffect(() => {
@@ -51,14 +59,19 @@ export default function App() {
   return (
     <div className="flex flex-row">
       <div className="flex flex-col m-6 gap-6">
+        <ConnectToGame onSetGameName={connectToGame} />
         <div className="flex flex-row gap-6">
           <h1 className="my-auto">My Games</h1>
           <Button onClick={addNewGame}>New Game</Button>
         </div>
         {allGames.map((game, index) => (
           <div className="flex flex-row gap-2">
-            <Button onClick={() => openGame(index)}>{game.gameName}</Button>
-            <Button onClick={() => deleteGame(index)}>delete</Button>
+            <Button onClick={() => openGame(index)} className="w-72">
+              {game.gameName}
+            </Button>
+            <Button onClick={() => deleteGame(index)} variant="ghost">
+              <Trash2 />
+            </Button>
           </div>
         ))}
       </div>
@@ -66,6 +79,7 @@ export default function App() {
         key={gameEditorKey}
         gameData={allGames[currentGameIndex]}
         onGameDataChange={setGameData}
+        sharedGameName={connectToGameName}
       />
     </div>
   );
