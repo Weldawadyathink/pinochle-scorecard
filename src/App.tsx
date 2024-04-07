@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { MainGameEditor } from "@/components/MainGameEditor";
 import { PinochleGame } from "@/shared/PinochleGame";
-import { ConnectToGame } from "./components/ConnectToGame";
-import { GameList } from "@/components/GameList";
-import { Unplug } from "lucide-react";
+import { Sidebar } from "@/components/Sidebar";
+import { Button } from "@/components/ui/button";
 
 export default function App() {
   const [gameEditorKey, setGameEditorKey] = useState(crypto.randomUUID());
@@ -35,6 +34,8 @@ export default function App() {
 
   function connectToGame(name: string) {
     setConnectToGameName(name);
+    setCurrentGameIndex(allGames.length)
+    setAllGames([...allGames, new PinochleGame])
     setGameEditorKey(crypto.randomUUID());
   }
 
@@ -44,10 +45,9 @@ export default function App() {
 
   return (
     <div className="flex flex-row">
-      <div className="flex flex-col m-6 gap-6">
-        <ConnectToGame onSetGameName={connectToGame} />
-        <GameList games={allGames} onChange={setAllGames} openGame={openGame} />
-      </div>
+      <Sidebar games={allGames} onChange={setAllGames} openGame={openGame} onSetGameName={connectToGame}>
+        <Button variant="outline">Open Sidebar</Button>
+      </Sidebar>
       <MainGameEditor
         key={gameEditorKey}
         gameData={allGames[currentGameIndex]}
