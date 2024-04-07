@@ -26,7 +26,7 @@ export function MainGameEditor({
       ? `ws://localhost:8787/v1/game/connect/${sharedGameName}`
       : `wss://api.pinochle.spenserbushey.com/v1/game/connect/${sharedGameName}`,
   );
-  const { sendMessage, readyState } = useWebSocket(
+  const { sendJsonMessage, readyState } = useWebSocket(
     socketUrl,
     {
       onMessage: (msg) => {
@@ -36,6 +36,13 @@ export function MainGameEditor({
         if (senderId !== appId) {
           const game = PinochleGame.fromJSON(data.payload);
           onGameDataChange(game);
+        }
+      },
+      onOpen: () => {
+        if (sharedGameName) {
+          sendJsonMessage({
+            messageType: "requestGameUpdate",
+          });
         }
       },
     },
@@ -65,13 +72,11 @@ export function MainGameEditor({
 
   function setNewGameState(state: PinochleGame) {
     const serialized = JSON.stringify(state);
-    sendMessage(
-      JSON.stringify({
-        messageType: "gameUpdate",
-        payload: serialized,
-        senderId: appId,
-      }),
-    );
+    sendJsonMessage({
+      messageType: "gameUpdate",
+      payload: serialized,
+      senderId: appId,
+    });
     onGameDataChange(state);
   }
 

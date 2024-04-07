@@ -10,7 +10,7 @@ export interface Env {
 }
 
 interface StandardMessage {
-  messageType: "gameUpdate"; // Future values to come for other controls
+  messageType: "gameUpdate" | "requestGameUpdate"; // Future values to come for other controls
   payload?: string; // JSON representation of pinochle object
   senderId?: string; // arbitrary identifier to determine which client sent the update. UUID4 is recommended.
 }
@@ -83,9 +83,11 @@ export default {
 
 export class WebSocketHibernationServer {
   state: DurableObjectState;
+  lastPayload: string;
 
   constructor(state: DurableObjectState, env: Env) {
     this.state = state;
+    this.lastPayload = "";
   }
 
   // Handle HTTP requests from clients.
@@ -138,8 +140,16 @@ export class WebSocketHibernationServer {
 
     if (data.messageType === "gameUpdate") {
       console.log("Sending game update");
+      this.lastPayload = data.payload as string;
       const sockets = this.state.getWebSockets();
       sockets.forEach((socket) => socket.send(JSON.stringify(data)));
+    } else if (data.messageType === "requestGameUpdate") {
+      ws.send(
+        JSON.stringify({
+          messageType: "gameUpdate",
+          payload: this.lastPayload,
+        }),
+      );
     } else {
       console.log("Unknown message type");
       ws.send(
