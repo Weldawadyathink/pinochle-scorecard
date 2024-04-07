@@ -1,4 +1,6 @@
 import { PinochleRound } from "./PinochleRound.ts";
+
+// @ts-expect-error
 import { generate } from "project-namer";
 
 export class PinochleGame {

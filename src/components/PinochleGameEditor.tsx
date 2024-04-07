@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { animated, useTrail, useSpring } from "@react-spring/web";
+import { animated, useTrail } from "@react-spring/web";
 
 export interface PinochleGameEditorProps {
   data: PinochleGame;

@@ -2,6 +2,8 @@ import { AutoRouter, error, json, withParams, cors } from "itty-router";
 import { drizzle } from "drizzle-orm/d1";
 import { eq, sql } from "drizzle-orm";
 import { game } from "./schema";
+
+// @ts-expect-error
 import { generate } from "project-namer";
 
 export interface Env {

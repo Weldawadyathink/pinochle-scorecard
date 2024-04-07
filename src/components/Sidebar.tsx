@@ -2,7 +2,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { PinochleGame } from "@/shared/PinochleGame";
 import { Button } from "@/components/ui/button";
 import { Trash2, SquarePlus } from "lucide-react";
-import { animated, useSprings, useTrail } from "@react-spring/web";
+import { animated, useTrail } from "@react-spring/web";
 import {
   Dialog,
   DialogContent,
