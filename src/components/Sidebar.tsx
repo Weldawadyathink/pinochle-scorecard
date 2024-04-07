@@ -150,12 +150,28 @@ export function Sidebar({
   onChange,
   openGame,
 }: SidebarProps) {
+  const [open, setOpen] = useState(false);
+
+  function setGameNameAndClose(name: string) {
+    onSetGameName(name);
+    setOpen(false);
+  }
+
+  function openGameAndClose(index: number) {
+    openGame(index);
+    setOpen(false);
+  }
+
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent side="left">
-        <ConnectToGame onSetGameName={onSetGameName} />
-        <GameList games={games} onChange={onChange} openGame={openGame} />
+        <ConnectToGame onSetGameName={setGameNameAndClose} />
+        <GameList
+          games={games}
+          onChange={onChange}
+          openGame={openGameAndClose}
+        />
       </SheetContent>
     </Sheet>
   );
