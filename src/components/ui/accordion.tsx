@@ -12,7 +12,7 @@ const AccordionItem = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AccordionPrimitive.Item
     ref={ref}
-    className={cn("border-b", className)}
+    className={className}
     {...props}
   />
 ))
@@ -38,6 +38,20 @@ const AccordionTrigger = React.forwardRef<
 ))
 AccordionTrigger.displayName = AccordionPrimitive.Trigger.displayName
 
+const AccordionHeader = React.forwardRef<
+  React.ElementRef<typeof AccordionPrimitive.Header>,
+  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Header>
+>(({ className, children, ...props }, ref) => (
+  <AccordionPrimitive.Header
+    className={cn("flex", className)}
+    ref={ref}
+    {...props}
+  >
+    {children}
+  </AccordionPrimitive.Header>
+));
+AccordionHeader.displayName = AccordionPrimitive.Trigger.displayName;
+
 const AccordionContent = React.forwardRef<
   React.ElementRef<typeof AccordionPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Content>
@@ -53,4 +67,10 @@ const AccordionContent = React.forwardRef<
 
 AccordionContent.displayName = AccordionPrimitive.Content.displayName
 
-export { Accordion, AccordionItem, AccordionTrigger, AccordionContent }
+export {
+  Accordion,
+  AccordionItem,
+  AccordionHeader,
+  AccordionTrigger,
+  AccordionContent,
+};

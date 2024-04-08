@@ -1,4 +1,4 @@
-import { useState, forwardRef } from "react";
+import { useState } from "react";
 import { PinochleGame } from "@/shared/PinochleGame";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import { fetcher } from "itty-fetcher";
@@ -13,6 +13,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
+  AccordionHeader,
 } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import {
@@ -122,7 +123,6 @@ function PinochleGameEditor({ game, onChange }: PinochleGameEditorProps) {
   const [openRound, setOpenRoundDirectly] = useState("");
 
   function setOpenRound(round: string) {
-    console.log("setting round", round, openRound)
     if (openRound === round) {
       setOpenRoundDirectly("");
     } else {
@@ -144,7 +144,7 @@ function PinochleGameEditor({ game, onChange }: PinochleGameEditorProps) {
   }
 
   if (shouldOpenNewestRound) {
-    setOpenRound(game.rounds[game.rounds.length - 1].uuid);
+    setOpenRoundDirectly(game.rounds[game.rounds.length - 1].uuid);
     setShouldOpenNewestRound(false);
   }
 
@@ -203,19 +203,34 @@ function PinochleGameEditor({ game, onChange }: PinochleGameEditorProps) {
 
   return (
     <>
-      <Accordion type="single" value={openRound} onValueChange={setOpenRound}>
+      <div className="flex flex-row gap-12">
+        <h1>{game.teamAName}</h1>
+        <h1>icon</h1>
+        <h1>{game.teamBName}</h1>
+      </div>
+      <Accordion
+        type="single"
+        value={openRound}
+        onValueChange={setOpenRound}
+        className="flex flex-col gap-6"
+      >
         {roundTransitions((style, round, _, index) => (
           <animated.div key={round.uuid} style={style}>
             <AccordionItem value={round.uuid}>
-              <AccordionTrigger>
-                <div className="flex flex-row gap-6" onClick={() =>console.log(round.uuid)}>
+              <AccordionHeader>
+                <div
+                  className="flex flex-row gap-6"
+                  onClick={() => setOpenRound(round.uuid)}
+                >
+                  <span className="my-auto ml-auto">
+                    Team A: {game.getTeamAScore(index)}
+                  </span>
                   {roundIcons[index]}
-                  <span className="my-auto">
-                    Team A: {game.getTeamAScore(index)} | Team B:{" "}
-                    {game.getTeamBScore(index)}
+                  <span className="my-auto mr-auto">
+                    Team A: {game.getTeamBScore(index)}
                   </span>
                 </div>
-              </AccordionTrigger>
+              </AccordionHeader>
 
               <AccordionContent asChild>
                 <PinochleRoundEditor
