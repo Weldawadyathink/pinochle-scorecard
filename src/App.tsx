@@ -3,6 +3,7 @@ import { MainGameEditor } from "@/components/MainGameEditor";
 import { PinochleGame } from "@/shared/PinochleGame";
 import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
+import { Menu } from "lucide-react";
 
 export default function App() {
   const [gameEditorKey, setGameEditorKey] = useState(crypto.randomUUID());
@@ -34,8 +35,8 @@ export default function App() {
 
   function connectToGame(name: string) {
     setConnectToGameName(name);
-    setCurrentGameIndex(allGames.length)
-    setAllGames([...allGames, new PinochleGame])
+    setCurrentGameIndex(allGames.length);
+    setAllGames([...allGames, new PinochleGame()]);
     setGameEditorKey(crypto.randomUUID());
   }
 
@@ -44,10 +45,20 @@ export default function App() {
   }, [allGames]);
 
   return (
-    <div className="flex flex-row">
-      <Sidebar games={allGames} onChange={setAllGames} openGame={openGame} onSetGameName={connectToGame}>
-        <Button variant="outline">Open Sidebar</Button>
-      </Sidebar>
+    <div className="container max-w-2xl mx-auto p-6">
+      <div className="flex flex-row gap-4">
+        <Sidebar
+          games={allGames}
+          onChange={setAllGames}
+          openGame={openGame}
+          onSetGameName={connectToGame}
+        >
+          <Button variant="link" className="hover:text-violet-500 fade-in-out duration-500">
+            <Menu />
+          </Button>
+        </Sidebar>
+        <h1 className="text-3xl my-auto">Pinochle Scorecard</h1>
+      </div>
       <MainGameEditor
         key={gameEditorKey}
         gameData={allGames[currentGameIndex]}
