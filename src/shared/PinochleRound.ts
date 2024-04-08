@@ -8,6 +8,7 @@ export class PinochleRound {
   roundComplete: boolean;
   overrideTeamAHasTakenTrick: boolean;
   overrideTeamBHasTakenTrick: boolean;
+  uuid: string; // locally unique, not saved when serialized
 
   constructor(options?: {
     teamAMeldScore?: number;
@@ -38,6 +39,7 @@ export class PinochleRound {
     this.roundComplete = roundComplete;
     this.overrideTeamAHasTakenTrick = false;
     this.overrideTeamBHasTakenTrick = false;
+    this.uuid = crypto.randomUUID();
   }
 
   // Team must take trick to not go set, but trick doesn't need to have points

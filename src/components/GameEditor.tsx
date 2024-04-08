@@ -7,7 +7,7 @@ import { Copy } from "lucide-react";
 import clipboard from "clipboardy";
 import { PinochleRound } from "@/shared/PinochleRound";
 import { set, cloneDeep } from "lodash-es";
-import { animated, useTrail } from "@react-spring/web";
+import { animated, useTrail, useTransition } from "@react-spring/web";
 import {
   Accordion,
   AccordionContent,
@@ -16,46 +16,6 @@ import {
 } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import {
-  IconRosetteNumber1,
-  IconRosetteNumber2,
-  IconRosetteNumber3,
-  IconRosetteNumber4,
-  IconRosetteNumber5,
-  IconRosetteNumber6,
-  IconRosetteNumber7,
-  IconRosetteNumber8,
-  IconCircleNumber1,
-  IconCircleNumber2,
-  IconCircleNumber3,
-  IconCircleNumber4,
-  IconCircleNumber5,
-  IconCircleNumber6,
-  IconCircleNumber7,
-  IconCircleNumber8,
-  IconSquareNumber1,
-  IconSquareNumber2,
-  IconSquareNumber3,
-  IconSquareNumber4,
-  IconSquareNumber5,
-  IconSquareNumber6,
-  IconSquareNumber7,
-  IconSquareNumber8,
-  IconHexagonNumber1,
-  IconHexagonNumber2,
-  IconHexagonNumber3,
-  IconHexagonNumber4,
-  IconHexagonNumber5,
-  IconHexagonNumber6,
-  IconHexagonNumber7,
-  IconHexagonNumber8,
-  IconPentagonNumber1,
-  IconPentagonNumber2,
-  IconPentagonNumber3,
-  IconPentagonNumber4,
-  IconPentagonNumber5,
-  IconPentagonNumber6,
-  IconPentagonNumber7,
-  IconPentagonNumber8,
   IconSquareRoundedNumber1,
   IconSquareRoundedNumber2,
   IconSquareRoundedNumber3,
@@ -151,21 +111,21 @@ function PinochleRoundEditor({ data, onChange }: PinochleRoundEditorProps) {
 }
 
 interface PinochleGameEditorProps {
-  data: PinochleGame;
-  onChange: (data: PinochleGame) => void;
+  game: PinochleGame;
+  onChange: (game: PinochleGame) => void;
 }
 
-function PinochleGameEditor({ data, onChange }: PinochleGameEditorProps) {
+function PinochleGameEditor({ game, onChange }: PinochleGameEditorProps) {
   const [openNewRound, setOpenNewRound] = useState(false);
 
   function setRound(index: number, roundData: PinochleRound) {
-    const temp = cloneDeep(data);
+    const temp = cloneDeep(game);
     temp.rounds[index] = roundData;
     onChange(temp);
   }
 
   function newRound() {
-    const temp = cloneDeep(data);
+    const temp = cloneDeep(game);
     temp.newRound();
     setOpenNewRound(true);
     onChange(temp);
@@ -175,67 +135,7 @@ function PinochleGameEditor({ data, onChange }: PinochleGameEditorProps) {
     setOpenNewRound(false);
   }
 
-  const trails = useTrail(data.rounds.length, {
-    from: { x: 100, opacity: 0 },
-    to: { x: 0, opacity: 1 },
-  });
-
-  const rosetteIcons = [
-    <IconRosetteNumber1 stroke={2} />,
-    <IconRosetteNumber2 stroke={2} />,
-    <IconRosetteNumber3 stroke={2} />,
-    <IconRosetteNumber4 stroke={2} />,
-    <IconRosetteNumber5 stroke={2} />,
-    <IconRosetteNumber6 stroke={2} />,
-    <IconRosetteNumber7 stroke={2} />,
-    <IconRosetteNumber8 stroke={2} />,
-  ];
-
-  const circleIcons = [
-    <IconCircleNumber1 stroke={2} />,
-    <IconCircleNumber2 stroke={2} />,
-    <IconCircleNumber3 stroke={2} />,
-    <IconCircleNumber4 stroke={2} />,
-    <IconCircleNumber5 stroke={2} />,
-    <IconCircleNumber6 stroke={2} />,
-    <IconCircleNumber7 stroke={2} />,
-    <IconCircleNumber8 stroke={2} />,
-  ];
-
-  const squareIcons = [
-    <IconSquareNumber1 stroke={2} />,
-    <IconSquareNumber2 stroke={2} />,
-    <IconSquareNumber3 stroke={2} />,
-    <IconSquareNumber4 stroke={2} />,
-    <IconSquareNumber5 stroke={2} />,
-    <IconSquareNumber6 stroke={2} />,
-    <IconSquareNumber7 stroke={2} />,
-    <IconSquareNumber8 stroke={2} />,
-  ];
-
-  const hexagonIcons = [
-    <IconHexagonNumber1 stroke={2} />,
-    <IconHexagonNumber2 stroke={2} />,
-    <IconHexagonNumber3 stroke={2} />,
-    <IconHexagonNumber4 stroke={2} />,
-    <IconHexagonNumber5 stroke={2} />,
-    <IconHexagonNumber6 stroke={2} />,
-    <IconHexagonNumber7 stroke={2} />,
-    <IconHexagonNumber8 stroke={2} />,
-  ];
-
-  const pentagonIcons = [
-    <IconPentagonNumber1 stroke={2} />,
-    <IconPentagonNumber2 stroke={2} />,
-    <IconPentagonNumber3 stroke={2} />,
-    <IconPentagonNumber4 stroke={2} />,
-    <IconPentagonNumber5 stroke={2} />,
-    <IconPentagonNumber6 stroke={2} />,
-    <IconPentagonNumber7 stroke={2} />,
-    <IconPentagonNumber8 stroke={2} />,
-  ];
-
-  const squareRoundedIcons = [
+  const roundIcons = [
     <IconSquareRoundedNumber1 stroke={2} />,
     <IconSquareRoundedNumber2 stroke={2} />,
     <IconSquareRoundedNumber3 stroke={2} />,
@@ -246,35 +146,37 @@ function PinochleGameEditor({ data, onChange }: PinochleGameEditorProps) {
     <IconSquareRoundedNumber8 stroke={2} />,
   ];
 
-  let roundIcons = squareRoundedIcons;
+  const roundTransitions = useTransition(game.rounds, {
+    from: { x: 0, y: 300, opacity: -0.2 },
+    enter: { x: 0, y: 0, opacity: 1 },
+    leave: { x: -300, y: 0, opacity: -0.2 },
+    trail: 100,
+    keys: game.rounds.map((r) => r.uuid),
+  });
 
   return (
     <>
-      <Accordion type="single">
-        {data.rounds.map((round, index) => {
-          const roundNumber = index + 1;
-          const teamACumulativeScore = data.getTeamAScore(index);
-          const teamBCumulativeScore = data.getTeamBScore(index);
-          return (
-            <animated.div key={index} style={trails[index]}>
-              <AccordionItem value={`round-${index}`} key={`round-${index}`}>
-                <AccordionTrigger>
-                  <div className="flex flex-row gap-6">
-                    {roundIcons[index]}
-                    Round {roundNumber} | Team A: {teamACumulativeScore} | Team
-                    B: {teamBCumulativeScore}
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <PinochleRoundEditor
-                    data={round}
-                    onChange={(d) => setRound(index, d)}
-                  />
-                </AccordionContent>
-              </AccordionItem>
-            </animated.div>
-          );
-        })}
+      <Accordion type="multiple">
+        {roundTransitions((style, round, _, index) => (
+          <animated.div key={round.uuid} style={style}>
+            <AccordionItem value={round.uuid}>
+              <AccordionTrigger>
+                <div className="flex flex-row gap-6">
+                  {roundIcons[index]}
+                  Team A: {game.getTeamAScore(index)} | Team B:{" "}
+                  {game.getTeamBScore(index)}
+                </div>
+              </AccordionTrigger>
+
+              <AccordionContent asChild>
+                <PinochleRoundEditor
+                  data={round}
+                  onChange={(d) => setRound(index, d)}
+                />
+              </AccordionContent>
+            </AccordionItem>
+          </animated.div>
+        ))}
       </Accordion>
       <Button onClick={newRound}>New Round</Button>
     </>
@@ -399,7 +301,7 @@ export function GameEditor({
           )}
         </div>
         <PinochleGameEditor
-          data={gameData}
+          game={gameData}
           onChange={(d) => setNewGameState(d)}
         />
       </div>
