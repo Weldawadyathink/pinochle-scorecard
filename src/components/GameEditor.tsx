@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, forwardRef } from "react";
 import { PinochleGame } from "@/shared/PinochleGame";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import { fetcher } from "itty-fetcher";
@@ -7,7 +7,7 @@ import { Copy } from "lucide-react";
 import clipboard from "clipboardy";
 import { PinochleRound } from "@/shared/PinochleRound";
 import { set, cloneDeep } from "lodash-es";
-import { animated, useTrail, useTransition } from "@react-spring/web";
+import { animated, useTransition } from "@react-spring/web";
 import {
   Accordion,
   AccordionContent,
@@ -31,7 +31,11 @@ interface PinochleRoundEditorProps {
   onChange: (data: PinochleRound) => void;
 }
 
-function PinochleRoundEditor({ data, onChange }: PinochleRoundEditorProps) {
+function PinochleRoundEditor({
+  data,
+  onChange,
+  ...props
+}: PinochleRoundEditorProps) {
   function setData(path: string, value: any) {
     const temp = cloneDeep(data);
     set(temp, path, value);
@@ -45,68 +49,66 @@ function PinochleRoundEditor({ data, onChange }: PinochleRoundEditorProps) {
   }
 
   return (
-    <>
-      <div className="flex flex-row text-xl gap-8">
-        <div>
-          <div className="flex flex-row gap-4">
-            <Button
-              variant={data.teamWithBid === "a" ? "default" : "secondary"}
-              onClick={() => setData("teamWithBid", "a")}
-            >
-              Take Bid
-            </Button>
-            <Input
-              type="number"
-              disabled={data.teamWithBid !== "a"}
-              value={data.bid}
-              onChange={(e: any) => setInt("bid", e.target.value)}
-            />
-          </div>
-          <h1>Team A Meld</h1>
+    <div className="flex flex-row text-xl gap-8" {...props}>
+      <div>
+        <div className="flex flex-row gap-4">
+          <Button
+            variant={data.teamWithBid === "a" ? "default" : "secondary"}
+            onClick={() => setData("teamWithBid", "a")}
+          >
+            Take Bid
+          </Button>
           <Input
             type="number"
-            value={data.teamAMeldScore}
-            onChange={(e: any) => setInt("teamAMeldScore", e.target.value)}
+            disabled={data.teamWithBid !== "a"}
+            value={data.bid}
+            onChange={(e: any) => setInt("bid", e.target.value)}
           />
-          <h1>Team A Tricks</h1>
-          <Input
-            type="number"
-            value={data.teamATrickScore}
-            onChange={(e: any) => setInt("teamATrickScore", e.target.value)}
-          />
-          <h1>Total Score: {data.teamATotalScore}</h1>
         </div>
-        <div>
-          <div className="flex flex-row gap-4">
-            <Button
-              variant={data.teamWithBid === "b" ? "default" : "secondary"}
-              onClick={() => setData("teamWithBid", "b")}
-            >
-              Take Bid
-            </Button>
-            <Input
-              type="number"
-              value={data.bid}
-              disabled={data.teamWithBid !== "b"}
-              onChange={(e: any) => setInt("bid", e.target.value)}
-            />
-          </div>
-          <h1>Team B Meld</h1>
-          <Input
-            type="number"
-            value={data.teamBMeldScore}
-            onChange={(e: any) => setInt("teamBMeldScore", e.target.value)}
-          />
-          <h1>Team B Tricks</h1>
-          <Input
-            type="number"
-            value={data.teamBTrickScore}
-            onChange={(e: any) => setInt("teamBTrickScore", e.target.value)}
-          />
-          <h1>Total Score: {data.teamBTotalScore}</h1>
-        </div>
+        <h1>Team A Meld</h1>
+        <Input
+          type="number"
+          value={data.teamAMeldScore}
+          onChange={(e: any) => setInt("teamAMeldScore", e.target.value)}
+        />
+        <h1>Team A Tricks</h1>
+        <Input
+          type="number"
+          value={data.teamATrickScore}
+          onChange={(e: any) => setInt("teamATrickScore", e.target.value)}
+        />
+        <h1>Total Score: {data.teamATotalScore}</h1>
       </div>
-    </>
+      <div>
+        <div className="flex flex-row gap-4">
+          <Button
+            variant={data.teamWithBid === "b" ? "default" : "secondary"}
+            onClick={() => setData("teamWithBid", "b")}
+          >
+            Take Bid
+          </Button>
+          <Input
+            type="number"
+            value={data.bid}
+            disabled={data.teamWithBid !== "b"}
+            onChange={(e: any) => setInt("bid", e.target.value)}
+          />
+        </div>
+        <h1>Team B Meld</h1>
+        <Input
+          type="number"
+          value={data.teamBMeldScore}
+          onChange={(e: any) => setInt("teamBMeldScore", e.target.value)}
+        />
+        <h1>Team B Tricks</h1>
+        <Input
+          type="number"
+          value={data.teamBTrickScore}
+          onChange={(e: any) => setInt("teamBTrickScore", e.target.value)}
+        />
+        <h1>Total Score: {data.teamBTotalScore}</h1>
+      </div>
+    </div>
   );
 }
 
@@ -116,7 +118,17 @@ interface PinochleGameEditorProps {
 }
 
 function PinochleGameEditor({ game, onChange }: PinochleGameEditorProps) {
-  const [openNewRound, setOpenNewRound] = useState(false);
+  const [shouldOpenNewestRound, setShouldOpenNewestRound] = useState(false);
+  const [openRound, setOpenRoundDirectly] = useState("");
+
+  function setOpenRound(round: string) {
+    console.log("setting round", round, openRound)
+    if (openRound === round) {
+      setOpenRoundDirectly("");
+    } else {
+      setOpenRoundDirectly(round);
+    }
+  }
 
   function setRound(index: number, roundData: PinochleRound) {
     const temp = cloneDeep(game);
@@ -127,23 +139,58 @@ function PinochleGameEditor({ game, onChange }: PinochleGameEditorProps) {
   function newRound() {
     const temp = cloneDeep(game);
     temp.newRound();
-    setOpenNewRound(true);
+    setShouldOpenNewestRound(true);
     onChange(temp);
   }
 
-  if (openNewRound) {
-    setOpenNewRound(false);
+  if (shouldOpenNewestRound) {
+    setOpenRound(game.rounds[game.rounds.length - 1].uuid);
+    setShouldOpenNewestRound(false);
   }
 
+  const roundIconSize = 42;
+
   const roundIcons = [
-    <IconSquareRoundedNumber1 stroke={2} />,
-    <IconSquareRoundedNumber2 stroke={2} />,
-    <IconSquareRoundedNumber3 stroke={2} />,
-    <IconSquareRoundedNumber4 stroke={2} />,
-    <IconSquareRoundedNumber5 stroke={2} />,
-    <IconSquareRoundedNumber6 stroke={2} />,
-    <IconSquareRoundedNumber7 stroke={2} />,
-    <IconSquareRoundedNumber8 stroke={2} />,
+    <IconSquareRoundedNumber1
+      stroke={2}
+      width={roundIconSize}
+      height={roundIconSize}
+    />,
+    <IconSquareRoundedNumber2
+      stroke={2}
+      width={roundIconSize}
+      height={roundIconSize}
+    />,
+    <IconSquareRoundedNumber3
+      stroke={2}
+      width={roundIconSize}
+      height={roundIconSize}
+    />,
+    <IconSquareRoundedNumber4
+      stroke={2}
+      width={roundIconSize}
+      height={roundIconSize}
+    />,
+    <IconSquareRoundedNumber5
+      stroke={2}
+      width={roundIconSize}
+      height={roundIconSize}
+    />,
+    <IconSquareRoundedNumber6
+      stroke={2}
+      width={roundIconSize}
+      height={roundIconSize}
+    />,
+    <IconSquareRoundedNumber7
+      stroke={2}
+      width={roundIconSize}
+      height={roundIconSize}
+    />,
+    <IconSquareRoundedNumber8
+      stroke={2}
+      width={roundIconSize}
+      height={roundIconSize}
+    />,
   ];
 
   const roundTransitions = useTransition(game.rounds, {
@@ -156,15 +203,17 @@ function PinochleGameEditor({ game, onChange }: PinochleGameEditorProps) {
 
   return (
     <>
-      <Accordion type="multiple">
+      <Accordion type="single" value={openRound} onValueChange={setOpenRound}>
         {roundTransitions((style, round, _, index) => (
           <animated.div key={round.uuid} style={style}>
             <AccordionItem value={round.uuid}>
               <AccordionTrigger>
-                <div className="flex flex-row gap-6">
+                <div className="flex flex-row gap-6" onClick={() =>console.log(round.uuid)}>
                   {roundIcons[index]}
-                  Team A: {game.getTeamAScore(index)} | Team B:{" "}
-                  {game.getTeamBScore(index)}
+                  <span className="my-auto">
+                    Team A: {game.getTeamAScore(index)} | Team B:{" "}
+                    {game.getTeamBScore(index)}
+                  </span>
                 </div>
               </AccordionTrigger>
 
