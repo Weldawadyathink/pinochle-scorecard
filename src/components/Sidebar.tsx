@@ -2,7 +2,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { PinochleGame } from "@/shared/PinochleGame";
 import { Button } from "@/components/ui/button";
 import { Trash2, SquarePlus, RadioTower } from "lucide-react";
-import { animated, useTrail } from "@react-spring/web";
+import { animated, useTransition } from "@react-spring/web";
 import {
   Dialog,
   DialogContent,
@@ -83,12 +83,13 @@ interface GameListProps {
   games: Array<PinochleGame>;
   onChange: (games: Array<PinochleGame>) => void;
   openGame: (index: number) => void; // Returns index of user selected game
-  onSetGameName: ConnectToGameProps["onSetGameName"]
+  onSetGameName: ConnectToGameProps["onSetGameName"];
 }
 
 function GameList({ games, onChange, openGame, onSetGameName }: GameListProps) {
   function deleteGame(index: number) {
-    let temp = games.filter((_, i) => i !== index);
+    let temp = [...games];
+    temp.splice(index, 1);
     if (temp.length < 1) {
       temp = [new PinochleGame()];
     }
@@ -101,14 +102,13 @@ function GameList({ games, onChange, openGame, onSetGameName }: GameListProps) {
     onChange(temp);
   }
 
-  const [spring] = useTrail(
-    games.length,
-    () => ({
-      from: { opacity: 0, y: 100, x: 0, scale: 1 },
-      to: { opacity: 1, y: 0 },
-    }),
-    [games],
-  );
+  const gameTransitions = useTransition(games, {
+    from: { x: 0, y: 300, opacity: -0.2 },
+    enter: { x: 0, y: 0, opacity: 1 },
+    leave: { x: -300, y: 0, opacity: -0.2 },
+    trail: 100,
+    keys: games.map((game) => game.uuid),
+  });
 
   return (
     <div className="flex flex-col gap-3">
@@ -117,20 +117,20 @@ function GameList({ games, onChange, openGame, onSetGameName }: GameListProps) {
           <h1 className="m-auto text-2xl">My Games</h1>
 
           <Tooltip>
-            <TooltipTrigger>
-              <ConnectToGame onSetGameName={onSetGameName}>
+            <ConnectToGame onSetGameName={onSetGameName}>
+              <TooltipTrigger asChild>
                 <Button variant="link" className="hover:text-green-500">
                   <RadioTower />
                 </Button>
-              </ConnectToGame>
-            </TooltipTrigger>
+              </TooltipTrigger>
+            </ConnectToGame>
             <TooltipContent>
               <p>Connect to a game</p>
             </TooltipContent>
           </Tooltip>
 
           <Tooltip>
-            <TooltipTrigger>
+            <TooltipTrigger asChild>
               <Button
                 onClick={addNewGame}
                 variant="link"
@@ -146,10 +146,10 @@ function GameList({ games, onChange, openGame, onSetGameName }: GameListProps) {
         </TooltipProvider>
       </div>
 
-      {games.map((game, index) => (
+      {gameTransitions((style, game, _, index) => (
         <animated.div
-          style={spring[index]}
-          key={index}
+          style={style}
+          key={game.uuid}
           className="flex flex-row gap-2"
         >
           <Button onClick={() => openGame(index)} className="w-72">
