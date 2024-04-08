@@ -15,6 +15,56 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
+import {
+  IconRosetteNumber1,
+  IconRosetteNumber2,
+  IconRosetteNumber3,
+  IconRosetteNumber4,
+  IconRosetteNumber5,
+  IconRosetteNumber6,
+  IconRosetteNumber7,
+  IconRosetteNumber8,
+  IconCircleNumber1,
+  IconCircleNumber2,
+  IconCircleNumber3,
+  IconCircleNumber4,
+  IconCircleNumber5,
+  IconCircleNumber6,
+  IconCircleNumber7,
+  IconCircleNumber8,
+  IconSquareNumber1,
+  IconSquareNumber2,
+  IconSquareNumber3,
+  IconSquareNumber4,
+  IconSquareNumber5,
+  IconSquareNumber6,
+  IconSquareNumber7,
+  IconSquareNumber8,
+  IconHexagonNumber1,
+  IconHexagonNumber2,
+  IconHexagonNumber3,
+  IconHexagonNumber4,
+  IconHexagonNumber5,
+  IconHexagonNumber6,
+  IconHexagonNumber7,
+  IconHexagonNumber8,
+  IconPentagonNumber1,
+  IconPentagonNumber2,
+  IconPentagonNumber3,
+  IconPentagonNumber4,
+  IconPentagonNumber5,
+  IconPentagonNumber6,
+  IconPentagonNumber7,
+  IconPentagonNumber8,
+  IconSquareRoundedNumber1,
+  IconSquareRoundedNumber2,
+  IconSquareRoundedNumber3,
+  IconSquareRoundedNumber4,
+  IconSquareRoundedNumber5,
+  IconSquareRoundedNumber6,
+  IconSquareRoundedNumber7,
+  IconSquareRoundedNumber8,
+} from "@tabler/icons-react";
 
 interface PinochleRoundEditorProps {
   data: PinochleRound;
@@ -130,6 +180,74 @@ function PinochleGameEditor({ data, onChange }: PinochleGameEditorProps) {
     to: { x: 0, opacity: 1 },
   });
 
+  const rosetteIcons = [
+    <IconRosetteNumber1 stroke={2} />,
+    <IconRosetteNumber2 stroke={2} />,
+    <IconRosetteNumber3 stroke={2} />,
+    <IconRosetteNumber4 stroke={2} />,
+    <IconRosetteNumber5 stroke={2} />,
+    <IconRosetteNumber6 stroke={2} />,
+    <IconRosetteNumber7 stroke={2} />,
+    <IconRosetteNumber8 stroke={2} />,
+  ];
+
+  const circleIcons = [
+    <IconCircleNumber1 stroke={2} />,
+    <IconCircleNumber2 stroke={2} />,
+    <IconCircleNumber3 stroke={2} />,
+    <IconCircleNumber4 stroke={2} />,
+    <IconCircleNumber5 stroke={2} />,
+    <IconCircleNumber6 stroke={2} />,
+    <IconCircleNumber7 stroke={2} />,
+    <IconCircleNumber8 stroke={2} />,
+  ];
+
+  const squareIcons = [
+    <IconSquareNumber1 stroke={2} />,
+    <IconSquareNumber2 stroke={2} />,
+    <IconSquareNumber3 stroke={2} />,
+    <IconSquareNumber4 stroke={2} />,
+    <IconSquareNumber5 stroke={2} />,
+    <IconSquareNumber6 stroke={2} />,
+    <IconSquareNumber7 stroke={2} />,
+    <IconSquareNumber8 stroke={2} />,
+  ];
+
+  const hexagonIcons = [
+    <IconHexagonNumber1 stroke={2} />,
+    <IconHexagonNumber2 stroke={2} />,
+    <IconHexagonNumber3 stroke={2} />,
+    <IconHexagonNumber4 stroke={2} />,
+    <IconHexagonNumber5 stroke={2} />,
+    <IconHexagonNumber6 stroke={2} />,
+    <IconHexagonNumber7 stroke={2} />,
+    <IconHexagonNumber8 stroke={2} />,
+  ];
+
+  const pentagonIcons = [
+    <IconPentagonNumber1 stroke={2} />,
+    <IconPentagonNumber2 stroke={2} />,
+    <IconPentagonNumber3 stroke={2} />,
+    <IconPentagonNumber4 stroke={2} />,
+    <IconPentagonNumber5 stroke={2} />,
+    <IconPentagonNumber6 stroke={2} />,
+    <IconPentagonNumber7 stroke={2} />,
+    <IconPentagonNumber8 stroke={2} />,
+  ];
+
+  const squareRoundedIcons = [
+    <IconSquareRoundedNumber1 stroke={2} />,
+    <IconSquareRoundedNumber2 stroke={2} />,
+    <IconSquareRoundedNumber3 stroke={2} />,
+    <IconSquareRoundedNumber4 stroke={2} />,
+    <IconSquareRoundedNumber5 stroke={2} />,
+    <IconSquareRoundedNumber6 stroke={2} />,
+    <IconSquareRoundedNumber7 stroke={2} />,
+    <IconSquareRoundedNumber8 stroke={2} />,
+  ];
+
+  let roundIcons = squareRoundedIcons;
+
   return (
     <>
       <Accordion type="single">
@@ -141,8 +259,11 @@ function PinochleGameEditor({ data, onChange }: PinochleGameEditorProps) {
             <animated.div key={index} style={trails[index]}>
               <AccordionItem value={`round-${index}`} key={`round-${index}`}>
                 <AccordionTrigger>
-                  Round {roundNumber} | Team A: {teamACumulativeScore} | Team B:{" "}
-                  {teamBCumulativeScore}
+                  <div className="flex flex-row gap-6">
+                    {roundIcons[index]}
+                    Round {roundNumber} | Team A: {teamACumulativeScore} | Team
+                    B: {teamBCumulativeScore}
+                  </div>
                 </AccordionTrigger>
                 <AccordionContent>
                   <PinochleRoundEditor
