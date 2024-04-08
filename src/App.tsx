@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { MainGameEditor } from "@/components/MainGameEditor";
+import { GameEditor } from "@/components/GameEditor";
 import { PinochleGame } from "@/shared/PinochleGame";
 import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
@@ -53,13 +53,16 @@ export default function App() {
           openGame={openGame}
           onSetGameName={connectToGame}
         >
-          <Button variant="link" className="hover:text-violet-500 fade-in-out duration-500">
+          <Button
+            variant="link"
+            className="hover:text-violet-500 fade-in-out duration-500"
+          >
             <Menu />
           </Button>
         </Sidebar>
         <h1 className="text-3xl my-auto">Pinochle Scorecard</h1>
       </div>
-      <MainGameEditor
+      <GameEditor
         key={gameEditorKey}
         gameData={allGames[currentGameIndex]}
         onGameDataChange={setGameData}
