@@ -45,8 +45,8 @@ export default function App() {
   }, [allGames]);
 
   return (
-    <div className="container max-w-2xl mx-auto p-6">
-      <div className="flex flex-row gap-4">
+    <div className="container max-w-xl mx-auto p-6">
+      <div className="relative">
         <Sidebar
           games={allGames}
           onChange={setAllGames}
@@ -55,12 +55,12 @@ export default function App() {
         >
           <Button
             variant="link"
-            className="hover:text-violet-500 fade-in-out duration-500"
+            className="hover:text-violet-500 fade-in-out duration-300 absolute right-0"
           >
             <Menu />
           </Button>
         </Sidebar>
-        <h1 className="text-3xl my-auto">Pinochle Scorecard</h1>
+        <h1 className="text-3xl text-center">Pinochle Scorecard</h1>
       </div>
       <GameEditor
         key={gameEditorKey}

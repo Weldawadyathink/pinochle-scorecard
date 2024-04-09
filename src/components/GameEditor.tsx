@@ -432,34 +432,30 @@ export function GameEditor({
   }
 
   return (
-    <div className="container max-w-2xl mx-auto p-6">
-      <div className="flex flex-col gap-6">
-        <div className="flex flex-row relative">
-          <Input
-            value={gameData.gameName}
-            className="!border-none text-3xl text-center"
-            onChange={(e) => setGameName(e.target.value)}
-          />
-          {gameSharedStatus === "Shared" && <span>{gameShareCode}</span>}
-          <Button onClick={shareGame} variant="link" className="absolute right-0">
-            <Share2
-              className={cn(
-                "hover:text-blue-500 ease-in-out duration-300",
-                gameSharedStatus === "Connecting"
-                  ? "text-yellow-500 hover:text-yellow-500"
-                  : "",
-                gameSharedStatus === "Shared"
-                  ? "text-green-500 hover:text-green-500"
-                  : "",
-              )}
-            />
-          </Button>
-        </div>
-        <PinochleGameEditor
-          game={gameData}
-          onChange={(d) => setNewGameState(d)}
+    <div className="flex flex-col gap-6 relative">
+      <Input
+        value={gameData.gameName}
+        className="!border-none text-3xl text-center"
+        onChange={(e) => setGameName(e.target.value)}
+      />
+      {gameSharedStatus === "Shared" && <span>{gameShareCode}</span>}
+      <Button onClick={shareGame} variant="link" className="absolute right-0">
+        <Share2
+          className={cn(
+            "hover:text-blue-500 ease-in-out duration-300",
+            gameSharedStatus === "Connecting"
+              ? "text-yellow-500 hover:text-yellow-500"
+              : "",
+            gameSharedStatus === "Shared"
+              ? "text-green-500 hover:text-green-500"
+              : "",
+          )}
         />
-      </div>
+      </Button>
+      <PinochleGameEditor
+        game={gameData}
+        onChange={(d) => setNewGameState(d)}
+      />
     </div>
   );
 }
