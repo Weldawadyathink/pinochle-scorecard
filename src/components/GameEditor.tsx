@@ -3,8 +3,7 @@ import { PinochleGame } from "@/shared/PinochleGame";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import { fetcher } from "itty-fetcher";
 import { Button } from "@/components/ui/button";
-import { Copy, Swords } from "lucide-react";
-import clipboard from "clipboardy";
+import { Share2, Swords } from "lucide-react";
 import { PinochleRound } from "@/shared/PinochleRound";
 import { set, cloneDeep } from "lodash-es";
 import { animated, useTransition } from "@react-spring/web";
@@ -12,12 +11,10 @@ import {
   Accordion,
   AccordionContent,
   AccordionItem,
-  AccordionTrigger,
   AccordionHeader,
 } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import {
-  IconSquareRoundedNumber0,
   IconSquareRoundedNumber1,
   IconSquareRoundedNumber2,
   IconSquareRoundedNumber3,
@@ -27,6 +24,7 @@ import {
   IconSquareRoundedNumber7,
   IconSquareRoundedNumber8,
 } from "@tabler/icons-react";
+import { cn } from "@/lib/utils";
 
 interface RoundIconProps {
   number: number;
@@ -180,16 +178,32 @@ function PinochleGameEditor({ game, onChange }: PinochleGameEditorProps) {
     keys: game.rounds.map((r) => r.uuid),
   });
 
+  function setTeamAName(name: string) {
+    const temp = cloneDeep(game);
+    temp.teamAName = name;
+    onChange(temp);
+  }
+
+  function setTeamBName(name: string) {
+    const temp = cloneDeep(game);
+    temp.teamBName = name;
+    onChange(temp);
+  }
+
   return (
     <>
       <div className="grid grid-cols-5 gap-2">
-        <h1 className=" text-2xl col-span-2 my-auto justify-self-end">
-          {game.teamAName}
-        </h1>
+        <Input
+          value={game.teamAName}
+          className="text-right text-2xl col-span-2 justify-self-end my-auto !border-none"
+          onChange={(e) => setTeamAName(e.target.value)}
+        />
         <Swords className="justify-self-center" width={60} height={60} />
-        <h1 className="text-2xl col-span-2 my-auto justify-self-start">
-          {game.teamBName}
-        </h1>
+        <Input
+          value={game.teamBName}
+          className="text-left text-2xl col-span-2 justify-self-start my-auto !border-none"
+          onChange={(e) => setTeamBName(e.target.value)}
+        />
       </div>
 
       <Accordion
@@ -277,7 +291,7 @@ export function GameEditor({
     connectToSocket,
   );
 
-  const gameName: string | null = socketUrl.split("/").pop() || null;
+  const gameShareCode: string | null = socketUrl.split("/").pop() || null;
 
   const connectionStatus = {
     [ReadyState.CONNECTING]: "Connecting",
@@ -318,39 +332,49 @@ export function GameEditor({
       : "wss://api.pinochle.spenserbushey.com";
 
   function shareGame() {
-    const api = fetcher({ base: apiUrl });
-    api.get("/v1/game/new").then((response) => {
-      setSocketUrl(`${websocketUrl}/v1/game/connect/${(response as any).name}`);
-      setConnectToSocket(true);
-    });
+    if (gameSharedStatus === "Private") {
+      console.log("Sharing game");
+      const api = fetcher({ base: apiUrl });
+      api.get("/v1/game/new").then((response) => {
+        setSocketUrl(
+          `${websocketUrl}/v1/game/connect/${(response as any).name}`,
+        );
+        setConnectToSocket(true);
+      });
+    } else {
+      console.log("Game is already shared");
+    }
+  }
+
+  function setGameName(name: string) {
+    const temp = cloneDeep(gameData);
+    temp.gameName = name;
+    onGameDataChange(temp);
   }
 
   return (
     <div className="container max-w-2xl mx-auto p-6">
       <div className="flex flex-col gap-6">
-        <div className="flex flex-row gap-4 text-center">
-          {gameSharedStatus === "Private" && (
-            <>
-              <span className="my-auto">Private Game</span>
-              <Button onClick={shareGame}>Share this game</Button>
-            </>
-          )}
-          {gameSharedStatus === "Connecting" && <span>Connecting...</span>}
-          {gameSharedStatus === "Shared" && (
-            <>
-              <span>Shared Game</span>
-              <span>{gameName}</span>
-              <Button
-                type="submit"
-                size="sm"
-                className="px-3"
-                onClick={() => clipboard.write(gameName || "")}
-              >
-                <span className="sr-only">Copy</span>
-                <Copy className="h-4 w-4" />
-              </Button>
-            </>
-          )}
+        <Input
+          value={gameData.gameName}
+          className="!border-none text-3xl text-center"
+          onChange={(e) => setGameName(e.target.value)}
+        />
+        <div className="flex flex-row">
+          {gameSharedStatus === "Shared" && <span>{gameShareCode}</span>}
+          <Button onClick={shareGame} variant="link">
+            <Share2
+              className={cn(
+                "hover:text-blue-500 ease-in-out duration-300",
+                gameSharedStatus === "Connecting"
+                  ? "text-yellow-500 hover:text-yellow-500"
+                  : "",
+                gameSharedStatus === "Shared"
+                  ? "text-green-500 hover:text-green-500"
+                  : "",
+              )}
+            />
+          </Button>
         </div>
         <PinochleGameEditor
           game={gameData}
