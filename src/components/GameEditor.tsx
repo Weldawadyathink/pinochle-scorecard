@@ -3,7 +3,7 @@ import { PinochleGame } from "@/shared/PinochleGame";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import { fetcher } from "itty-fetcher";
 import { Button } from "@/components/ui/button";
-import { Copy } from "lucide-react";
+import { Copy, Swords } from "lucide-react";
 import clipboard from "clipboardy";
 import { PinochleRound } from "@/shared/PinochleRound";
 import { set, cloneDeep } from "lodash-es";
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import {
+  IconSquareRoundedNumber0,
   IconSquareRoundedNumber1,
   IconSquareRoundedNumber2,
   IconSquareRoundedNumber3,
@@ -26,6 +27,29 @@ import {
   IconSquareRoundedNumber7,
   IconSquareRoundedNumber8,
 } from "@tabler/icons-react";
+
+interface RoundIconProps {
+  number: number;
+  stroke: number;
+  width: number;
+  height: number;
+  className: string;
+}
+
+function RoundIcon({ number, ...props }: RoundIconProps) {
+  return (
+    <>
+      {number === 1 && <IconSquareRoundedNumber1 {...(props as any)} />}
+      {number === 2 && <IconSquareRoundedNumber2 {...(props as any)} />}
+      {number === 3 && <IconSquareRoundedNumber3 {...(props as any)} />}
+      {number === 4 && <IconSquareRoundedNumber4 {...(props as any)} />}
+      {number === 5 && <IconSquareRoundedNumber5 {...(props as any)} />}
+      {number === 6 && <IconSquareRoundedNumber6 {...(props as any)} />}
+      {number === 7 && <IconSquareRoundedNumber7 {...(props as any)} />}
+      {number === 8 && <IconSquareRoundedNumber8 {...(props as any)} />}
+    </>
+  );
+}
 
 interface PinochleRoundEditorProps {
   data: PinochleRound;
@@ -148,51 +172,6 @@ function PinochleGameEditor({ game, onChange }: PinochleGameEditorProps) {
     setShouldOpenNewestRound(false);
   }
 
-  const roundIconSize = 42;
-
-  const roundIcons = [
-    <IconSquareRoundedNumber1
-      stroke={2}
-      width={roundIconSize}
-      height={roundIconSize}
-    />,
-    <IconSquareRoundedNumber2
-      stroke={2}
-      width={roundIconSize}
-      height={roundIconSize}
-    />,
-    <IconSquareRoundedNumber3
-      stroke={2}
-      width={roundIconSize}
-      height={roundIconSize}
-    />,
-    <IconSquareRoundedNumber4
-      stroke={2}
-      width={roundIconSize}
-      height={roundIconSize}
-    />,
-    <IconSquareRoundedNumber5
-      stroke={2}
-      width={roundIconSize}
-      height={roundIconSize}
-    />,
-    <IconSquareRoundedNumber6
-      stroke={2}
-      width={roundIconSize}
-      height={roundIconSize}
-    />,
-    <IconSquareRoundedNumber7
-      stroke={2}
-      width={roundIconSize}
-      height={roundIconSize}
-    />,
-    <IconSquareRoundedNumber8
-      stroke={2}
-      width={roundIconSize}
-      height={roundIconSize}
-    />,
-  ];
-
   const roundTransitions = useTransition(game.rounds, {
     from: { x: 0, y: 300, opacity: -0.2 },
     enter: { x: 0, y: 0, opacity: 1 },
@@ -203,11 +182,16 @@ function PinochleGameEditor({ game, onChange }: PinochleGameEditorProps) {
 
   return (
     <>
-      <div className="flex flex-row gap-12">
-        <h1>{game.teamAName}</h1>
-        <h1>icon</h1>
-        <h1>{game.teamBName}</h1>
+      <div className="grid grid-cols-5 gap-2">
+        <h1 className=" text-2xl col-span-2 my-auto justify-self-end">
+          {game.teamAName}
+        </h1>
+        <Swords className="justify-self-center" width={60} height={60} />
+        <h1 className="text-2xl col-span-2 my-auto justify-self-start">
+          {game.teamBName}
+        </h1>
       </div>
+
       <Accordion
         type="single"
         value={openRound}
@@ -217,19 +201,23 @@ function PinochleGameEditor({ game, onChange }: PinochleGameEditorProps) {
         {roundTransitions((style, round, _, index) => (
           <animated.div key={round.uuid} style={style}>
             <AccordionItem value={round.uuid}>
-              <AccordionHeader>
-                <div
-                  className="flex flex-row gap-6"
-                  onClick={() => setOpenRound(round.uuid)}
-                >
-                  <span className="my-auto ml-auto">
-                    Team A: {game.getTeamAScore(index)}
-                  </span>
-                  {roundIcons[index]}
-                  <span className="my-auto mr-auto">
-                    Team A: {game.getTeamBScore(index)}
-                  </span>
-                </div>
+              <AccordionHeader
+                className="grid grid-cols-5 gap-2"
+                onClick={() => setOpenRound(round.uuid)}
+              >
+                <span className="col-span-2 my-auto justify-self-end text-xl">
+                  {game.getTeamAScore(index)}
+                </span>
+                <RoundIcon
+                  number={index + 1}
+                  width={42}
+                  height={42}
+                  stroke={2}
+                  className="justify-self-center"
+                />
+                <span className="col-span-2 my-auto justify-self-start text-xl">
+                  {game.getTeamBScore(index)}
+                </span>
               </AccordionHeader>
 
               <AccordionContent asChild>
