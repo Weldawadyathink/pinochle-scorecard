@@ -3,7 +3,13 @@ import { PinochleGame } from "@/shared/PinochleGame";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import { fetcher } from "itty-fetcher";
 import { Button } from "@/components/ui/button";
-import { Share2, Swords } from "lucide-react";
+import {
+  CircleChevronLeft,
+  CirclePlus,
+  Share2,
+  Swords,
+  Trash2,
+} from "lucide-react";
 import { PinochleRound } from "@/shared/PinochleRound";
 import { set, cloneDeep } from "lodash-es";
 import { animated, useTransition } from "@react-spring/web";
@@ -25,6 +31,7 @@ import {
   IconSquareRoundedNumber8,
 } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
 
 interface RoundIconProps {
   number: number;
@@ -52,11 +59,13 @@ function RoundIcon({ number, ...props }: RoundIconProps) {
 interface PinochleRoundEditorProps {
   data: PinochleRound;
   onChange: (data: PinochleRound) => void;
+  onDeleteRound: () => void;
 }
 
 function PinochleRoundEditor({
   data,
   onChange,
+  onDeleteRound,
   ...props
 }: PinochleRoundEditorProps) {
   function setData(path: string, value: any) {
@@ -71,67 +80,109 @@ function PinochleRoundEditor({
     onChange(temp);
   }
 
+  function toggleBid() {
+    setData("teamWithBid", data.teamWithBid === "a" ? "b" : "a");
+  }
+
   return (
-    <div className="flex flex-row text-xl gap-8" {...props}>
-      <div>
-        <div className="flex flex-row gap-4">
-          <Button
-            variant={data.teamWithBid === "a" ? "default" : "secondary"}
-            onClick={() => setData("teamWithBid", "a")}
-          >
-            Take Bid
-          </Button>
+    <>
+      <div className="grid grid-cols-5 gap-2 my-4" {...props}>
+        {data.teamWithBid === "a" ? (
+          <div className="flex flex-col col-span-2 justify-self-end">
+            <span className="text-right">Bid</span>
+            <Input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={data.bid}
+              onChange={(e) => setInt("bid", e.target.value)}
+              className="text-right"
+            />
+          </div>
+        ) : (
+          <div className="col-span-2"></div>
+        )}
+        <CircleChevronLeft
+          width={32}
+          height={32}
+          className={cn(
+            "justify-self-center my-auto ease-in-out duration-500",
+            data.teamWithBid === "b" ? "rotate-[-180deg]" : "",
+          )}
+          onClick={toggleBid}
+        />
+        {data.teamWithBid === "b" ? (
+          <div className="flex flex-col col-span-2 justify-self-start">
+            <span className="text-left">Bid</span>
+            <Input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={data.bid}
+              onChange={(e) => setInt("bid", e.target.value)}
+              className="text-left"
+            />
+          </div>
+        ) : (
+          <div className="col-span-2"></div>
+        )}
+
+        <div className="flex flex-col col-span-2 justify-self-end text-right">
+          <span>Meld</span>
           <Input
-            type="number"
-            disabled={data.teamWithBid !== "a"}
-            value={data.bid}
-            onChange={(e: any) => setInt("bid", e.target.value)}
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={data.teamAMeldScore}
+            onChange={(e) => setInt("teamAMeldScore", e.target.value)}
+            className="text-right"
           />
         </div>
-        <h1>Team A Meld</h1>
-        <Input
-          type="number"
-          value={data.teamAMeldScore}
-          onChange={(e: any) => setInt("teamAMeldScore", e.target.value)}
-        />
-        <h1>Team A Tricks</h1>
-        <Input
-          type="number"
-          value={data.teamATrickScore}
-          onChange={(e: any) => setInt("teamATrickScore", e.target.value)}
-        />
-        <h1>Total Score: {data.teamATotalScore}</h1>
-      </div>
-      <div>
-        <div className="flex flex-row gap-4">
-          <Button
-            variant={data.teamWithBid === "b" ? "default" : "secondary"}
-            onClick={() => setData("teamWithBid", "b")}
-          >
-            Take Bid
-          </Button>
+        <div></div>
+        <div className="flex flex-col col-span-2 justify-self-start text-left">
+          <span>Meld</span>
           <Input
-            type="number"
-            value={data.bid}
-            disabled={data.teamWithBid !== "b"}
-            onChange={(e: any) => setInt("bid", e.target.value)}
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={data.teamBMeldScore}
+            onChange={(e) => setInt("teamBMeldScore", e.target.value)}
+            className="text-left"
           />
         </div>
-        <h1>Team B Meld</h1>
-        <Input
-          type="number"
-          value={data.teamBMeldScore}
-          onChange={(e: any) => setInt("teamBMeldScore", e.target.value)}
-        />
-        <h1>Team B Tricks</h1>
-        <Input
-          type="number"
-          value={data.teamBTrickScore}
-          onChange={(e: any) => setInt("teamBTrickScore", e.target.value)}
-        />
-        <h1>Total Score: {data.teamBTotalScore}</h1>
+
+        <div className="flex flex-col col-span-2 justify-self-end text-right">
+          <span>Tricks</span>
+          <Input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={data.teamATrickScore}
+            onChange={(e) => setInt("teamATrickScore", e.target.value)}
+            className="text-right"
+          />
+        </div>
+        <Button
+          variant="link"
+          className="hover:text-red-500 justify-self-center mt-auto duration-300 ease-in-out"
+          onClick={onDeleteRound}
+        >
+          <Trash2 />
+        </Button>
+        <div className="flex flex-col col-span-2 justify-self-start text-left">
+          <span>Tricks</span>
+          <Input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={data.teamBTrickScore}
+            onChange={(e) => setInt("teamBTrickScore", e.target.value)}
+            className="text-left"
+          />
+        </div>
       </div>
-    </div>
+      <Separator />
+    </>
   );
 }
 
@@ -159,10 +210,14 @@ function PinochleGameEditor({ game, onChange }: PinochleGameEditorProps) {
   }
 
   function newRound() {
-    const temp = cloneDeep(game);
-    temp.newRound();
-    setShouldOpenNewestRound(true);
-    onChange(temp);
+    if (game.rounds.length >= 8) {
+      console.log("Tried to add new round, but there are already 8 rounds");
+    } else {
+      const temp = cloneDeep(game);
+      temp.newRound();
+      setShouldOpenNewestRound(true);
+      onChange(temp);
+    }
   }
 
   if (shouldOpenNewestRound) {
@@ -171,9 +226,9 @@ function PinochleGameEditor({ game, onChange }: PinochleGameEditorProps) {
   }
 
   const roundTransitions = useTransition(game.rounds, {
-    from: { x: 0, y: 300, opacity: -0.2 },
-    enter: { x: 0, y: 0, opacity: 1 },
-    leave: { x: -300, y: 0, opacity: -0.2 },
+    from: { x: 0, y: -50, opacity: -0.2, scale: 0 },
+    enter: { x: 0, y: 0, opacity: 1, scale: 1 },
+    leave: { x: 0, y: 50, opacity: -0.2, scale: 0 },
     trail: 100,
     keys: game.rounds.map((r) => r.uuid),
   });
@@ -187,6 +242,15 @@ function PinochleGameEditor({ game, onChange }: PinochleGameEditorProps) {
   function setTeamBName(name: string) {
     const temp = cloneDeep(game);
     temp.teamBName = name;
+    onChange(temp);
+  }
+
+  function deleteRound(index: number) {
+    const temp = cloneDeep(game);
+    temp.rounds.splice(index, 1);
+    if (temp.rounds.length < 1) {
+      temp.newRound();
+    }
     onChange(temp);
   }
 
@@ -227,7 +291,7 @@ function PinochleGameEditor({ game, onChange }: PinochleGameEditorProps) {
                   width={42}
                   height={42}
                   stroke={2}
-                  className="justify-self-center"
+                  className="justify-self-center hover:text-violet-500 ease-in-out duration-300"
                 />
                 <span className="col-span-2 my-auto justify-self-start text-xl">
                   {game.getTeamBScore(index)}
@@ -238,13 +302,28 @@ function PinochleGameEditor({ game, onChange }: PinochleGameEditorProps) {
                 <PinochleRoundEditor
                   data={round}
                   onChange={(d) => setRound(index, d)}
+                  onDeleteRound={() => deleteRound(index)}
                 />
               </AccordionContent>
             </AccordionItem>
           </animated.div>
         ))}
       </Accordion>
-      <Button onClick={newRound}>New Round</Button>
+      {game.rounds.length < 8 && (
+        <div className="grid grid-cols-5">
+          <Button
+            onClick={newRound}
+            className="col-start-3 justify-self-center"
+            variant="link"
+          >
+            <CirclePlus
+              width={42}
+              height={42}
+              className="hover:text-violet-500 ease-in-out duration-300"
+            />
+          </Button>
+        </div>
+      )}
     </>
   );
 }
