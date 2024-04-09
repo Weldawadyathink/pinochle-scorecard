@@ -454,13 +454,16 @@ export function GameEditor({
   }
 
   return (
-    <div className="flex flex-col gap-6 relative">
+    <div className="flex flex-col gap-6 relative text-lg text-center">
       <Input
         value={gameData.gameName}
         className="!border-none text-3xl text-center"
         onChange={(e) => setGameName(e.target.value)}
       />
-      {gameSharedStatus === "Shared" && <span>{gameShareCode}</span>}
+      {gameSharedStatus === "Connecting" && (<span>Connecting to game sharing server...</span>)}
+      {gameSharedStatus === "Shared" && (
+        <span>{`Sharing Code: ${gameShareCode}`}</span>
+      )}
       <Button onClick={shareGame} variant="link" className="absolute right-0">
         <Share2
           className={cn(
