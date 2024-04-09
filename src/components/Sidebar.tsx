@@ -113,9 +113,9 @@ function GameList({ games, onChange, openGame, onSetGameName }: GameListProps) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-row gap-6">
-        <TooltipProvider>
-          <h1 className="m-auto text-2xl">My Games</h1>
+        <h1 className="m-auto text-2xl">My Games</h1>
 
+        <TooltipProvider disableHoverableContent>
           <Tooltip>
             <ConnectToGame onSetGameName={onSetGameName}>
               <TooltipTrigger asChild>
@@ -124,7 +124,7 @@ function GameList({ games, onChange, openGame, onSetGameName }: GameListProps) {
                 </Button>
               </TooltipTrigger>
             </ConnectToGame>
-            <TooltipContent>
+            <TooltipContent asChild>
               <p>Connect to a game</p>
             </TooltipContent>
           </Tooltip>
@@ -139,7 +139,7 @@ function GameList({ games, onChange, openGame, onSetGameName }: GameListProps) {
                 <SquarePlus />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent asChild>
               <p>Create a new game</p>
             </TooltipContent>
           </Tooltip>
