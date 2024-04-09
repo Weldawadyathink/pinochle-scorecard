@@ -225,13 +225,20 @@ function PinochleGameEditor({ game, onChange }: PinochleGameEditorProps) {
     setShouldOpenNewestRound(false);
   }
 
-  const roundTransitions = useTransition(game.rounds, {
-    from: { x: 0, y: -50, opacity: -0.2, scale: 0 },
-    enter: { x: 0, y: 0, opacity: 1, scale: 1 },
-    leave: { x: 0, y: 50, opacity: -0.2, scale: 0 },
-    trail: 100,
-    keys: game.rounds.map((r) => r.uuid),
-  });
+  const roundTransitions = useTransition(
+    ["TeamNameEditor" as const, ...game.rounds, "NewRoundButton" as const],
+    {
+      from: { x: 0, y: -50, opacity: -0.2, scale: 0 },
+      enter: { x: 0, y: 0, opacity: 1, scale: 1 },
+      leave: { x: 0, y: 50, opacity: -0.2, scale: 0 },
+      trail: 100,
+      keys: [
+        "TeamNameEditor",
+        ...game.rounds.map((r) => r.uuid),
+        "NewRoundButton",
+      ],
+    },
+  );
 
   function setTeamAName(name: string) {
     const temp = cloneDeep(game);
@@ -255,28 +262,58 @@ function PinochleGameEditor({ game, onChange }: PinochleGameEditorProps) {
   }
 
   return (
-    <>
-      <div className="grid grid-cols-5 gap-2">
-        <Input
-          value={game.teamAName}
-          className="text-right text-2xl col-span-2 justify-self-end my-auto !border-none"
-          onChange={(e) => setTeamAName(e.target.value)}
-        />
-        <Swords className="justify-self-center" width={60} height={60} />
-        <Input
-          value={game.teamBName}
-          className="text-left text-2xl col-span-2 justify-self-start my-auto !border-none"
-          onChange={(e) => setTeamBName(e.target.value)}
-        />
-      </div>
-
-      <Accordion
-        type="single"
-        value={openRound}
-        onValueChange={setOpenRound}
-        className="flex flex-col gap-6"
-      >
-        {roundTransitions((style, round, _, index) => (
+    <Accordion
+      type="single"
+      value={openRound}
+      onValueChange={setOpenRound}
+      className="flex flex-col gap-6"
+    >
+      {roundTransitions((style, round, _, index) => {
+        if (typeof round === "string") {
+          if (round === "NewRoundButton") {
+            return (
+              <>
+                {game.rounds.length < 8 && (
+                  <animated.div className="grid grid-cols-5" style={style}>
+                    <Button
+                      onClick={newRound}
+                      className="col-start-3 justify-self-center"
+                      variant="link"
+                    >
+                      <CirclePlus
+                        width={42}
+                        height={42}
+                        className="hover:text-violet-500 ease-in-out duration-300"
+                      />
+                    </Button>
+                  </animated.div>
+                )}
+              </>
+            );
+          }
+          if (round === "TeamNameEditor") {
+            return (
+              <animated.div className="grid grid-cols-5 gap-2" style={style}>
+                <Input
+                  value={game.teamAName}
+                  className="text-right text-2xl col-span-2 justify-self-end my-auto !border-none"
+                  onChange={(e) => setTeamAName(e.target.value)}
+                />
+                <Swords
+                  className="justify-self-center"
+                  width={60}
+                  height={60}
+                />
+                <Input
+                  value={game.teamBName}
+                  className="text-left text-2xl col-span-2 justify-self-start my-auto !border-none"
+                  onChange={(e) => setTeamBName(e.target.value)}
+                />
+              </animated.div>
+            );
+          }
+        }
+        return (
           <animated.div key={round.uuid} style={style}>
             <AccordionItem value={round.uuid}>
               <AccordionHeader
@@ -284,47 +321,32 @@ function PinochleGameEditor({ game, onChange }: PinochleGameEditorProps) {
                 onClick={() => setOpenRound(round.uuid)}
               >
                 <span className="col-span-2 my-auto justify-self-end text-xl">
-                  {game.getTeamAScore(index)}
+                  {game.getTeamAScore(index - 1)}
                 </span>
                 <RoundIcon
-                  number={index + 1}
+                  number={index}
                   width={42}
                   height={42}
                   stroke={2}
                   className="justify-self-center hover:text-violet-500 ease-in-out duration-300"
                 />
                 <span className="col-span-2 my-auto justify-self-start text-xl">
-                  {game.getTeamBScore(index)}
+                  {game.getTeamBScore(index - 1)}
                 </span>
               </AccordionHeader>
 
               <AccordionContent asChild>
                 <PinochleRoundEditor
                   data={round}
-                  onChange={(d) => setRound(index, d)}
-                  onDeleteRound={() => deleteRound(index)}
+                  onChange={(d) => setRound(index - 1, d)}
+                  onDeleteRound={() => deleteRound(index - 1)}
                 />
               </AccordionContent>
             </AccordionItem>
           </animated.div>
-        ))}
-      </Accordion>
-      {game.rounds.length < 8 && (
-        <div className="grid grid-cols-5">
-          <Button
-            onClick={newRound}
-            className="col-start-3 justify-self-center"
-            variant="link"
-          >
-            <CirclePlus
-              width={42}
-              height={42}
-              className="hover:text-violet-500 ease-in-out duration-300"
-            />
-          </Button>
-        </div>
-      )}
-    </>
+        );
+      })}
+    </Accordion>
   );
 }
 
