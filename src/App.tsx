@@ -60,7 +60,7 @@ export default function App() {
             <Menu />
           </Button>
         </Sidebar>
-        <h1 className="text-3xl text-center">Pinochle Scorecard</h1>
+        <h1 className="text-3xl text-center mb-4">Pinochle Scorecard</h1>
       </div>
       <GameEditor
         key={gameEditorKey}
