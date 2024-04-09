@@ -125,7 +125,7 @@ function GameList({ games, onChange, openGame, onSetGameName }: GameListProps) {
               </TooltipTrigger>
             </ConnectToGame>
             <TooltipContent asChild>
-              <p>Connect to a game</p>
+              <span>Connect to a game</span>
             </TooltipContent>
           </Tooltip>
 
@@ -140,7 +140,7 @@ function GameList({ games, onChange, openGame, onSetGameName }: GameListProps) {
               </Button>
             </TooltipTrigger>
             <TooltipContent asChild>
-              <p>Create a new game</p>
+              <span>Create a new game</span>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
