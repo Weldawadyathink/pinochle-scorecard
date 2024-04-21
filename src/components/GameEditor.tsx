@@ -382,6 +382,7 @@ export function GameEditor({
         }
       },
       onOpen: () => {
+        console.log("Requesting update", sharedGameName);
         if (sharedGameName) {
           sendJsonMessage({
             messageType: "requestGameUpdate",
@@ -441,6 +442,11 @@ export function GameEditor({
           `${websocketUrl}/v1/game/connect/${(response as any).name}`,
         );
         setConnectToSocket(true);
+        sendJsonMessage({
+          messageType: "gameUpdate",
+          payload: JSON.stringify(gameData),
+          senderId: appId,
+        });
       });
     } else {
       console.log("Game is already shared");

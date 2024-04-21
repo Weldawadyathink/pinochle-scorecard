@@ -146,6 +146,7 @@ export class WebSocketHibernationServer {
       const sockets = this.state.getWebSockets();
       sockets.forEach((socket) => socket.send(JSON.stringify(data)));
     } else if (data.messageType === "requestGameUpdate") {
+      console.log("Socket requested game update");
       ws.send(
         JSON.stringify({
           messageType: "gameUpdate",
