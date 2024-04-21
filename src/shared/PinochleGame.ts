@@ -15,11 +15,13 @@ export class PinochleGame {
     teamAName?: string;
     teamBName?: string;
     gameName?: string;
+    uuid?: string;
   }) {
     const {
       teamAName = "Awesome Team A",
       teamBName = "Fabulous Team B",
       gameName = generate().dashed.toLowerCase(),
+      uuid = crypto.randomUUID(),
     } = options || {};
     this.teamAName = teamAName;
     this.teamBName = teamBName;
@@ -27,7 +29,7 @@ export class PinochleGame {
     this.currentRoundIndex = 0;
     this.rounds.push(new PinochleRound());
     this.gameName = gameName;
-    this.uuid = crypto.randomUUID();
+    this.uuid = uuid;
   }
 
   newRound() {
@@ -68,6 +70,7 @@ export class PinochleGame {
     game.teamAName = obj.teamAName;
     game.teamBName = obj.teamBName;
     game.gameName = obj.gameName;
+    game.uuid = obj.uuid;
     return game;
   }
 }

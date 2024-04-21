@@ -18,6 +18,7 @@ export class PinochleRound {
     bid?: number;
     teamWithBid?: "a" | "b";
     roundComplete?: boolean;
+    uuid?: string;
   }) {
     const {
       teamAMeldScore = 0,
@@ -27,6 +28,7 @@ export class PinochleRound {
       bid = 25,
       teamWithBid = "a",
       roundComplete = true,
+      uuid = crypto.randomUUID(),
     } = options || {};
     // Originally, going set was not calculated if the round was not complete.
     // I changed this to calculate true score always by default.
@@ -39,7 +41,7 @@ export class PinochleRound {
     this.roundComplete = roundComplete;
     this.overrideTeamAHasTakenTrick = false;
     this.overrideTeamBHasTakenTrick = false;
-    this.uuid = crypto.randomUUID();
+    this.uuid = uuid;
   }
 
   // Team must take trick to not go set, but trick doesn't need to have points
@@ -110,6 +112,7 @@ export class PinochleRound {
       roundComplete: this.roundComplete,
       overrideTeamAHasTakenTrick: this.overrideTeamAHasTakenTrick,
       overrideTeamBHasTakenTrick: this.overrideTeamBHasTakenTrick,
+      uuid: this.uuid,
     };
   }
 
