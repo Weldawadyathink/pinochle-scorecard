@@ -9,7 +9,7 @@ export class PinochleGame {
   teamAName: string;
   teamBName: string;
   gameName: string;
-  uuid: string; // locally unique, not saved when serialized
+  uuid: string;
 
   constructor(options?: {
     teamAName?: string;
