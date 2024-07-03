@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-class PinochleRound {
+class PinochleRound: ObservableObject {
     
     var teamAMeldScore = 0
     var teamATrickScore = 0
@@ -138,7 +138,7 @@ enum PinochleGameParseError: Error {
 }
 
 @Model
-final class PinochleGame {
+class PinochleGame: ObservableObject {
     var rounds: [PinochleRound]
     var currentRoundIndex: Int
     var teamAName: String

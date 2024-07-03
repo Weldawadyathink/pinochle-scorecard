@@ -16,31 +16,7 @@ struct ContentView: View {
     NavigationSplitView {
       List {
         ForEach(games) { game in
-          NavigationLink {
-            Text(game.gameName)
-            TextField("Game name", text: Binding<String>(get: { game.gameName }, set: { newValue in
-              game.gameName = newValue
-              try? modelContext.save()
-            }))
-            Text("\(game.teamAName) vs \(game.teamBName)")
-            ForEach(game.rounds) {round in
-              HStack(spacing: 2, content: {
-                VStack(spacing: 2, content: {
-                  Stepper("", value: Binding<Int>(get: {round.teamAMeldScore}, set: {newValue in
-                    round.teamAMeldScore = newValue
-                  }), in: 0...Int.max)
-                  .labelsHidden()
-                })
-                Divider().padding(6)
-                VStack(spacing: 2, content: {
-                  Stepper("", value: Binding<Int>(get: {round.teamBMeldScore}, set: {newValue in
-                    round.teamBMeldScore = newValue
-                  }), in: 0...Int.max)
-                  .labelsHidden()
-                })
-              })
-            }
-          } label: {
+          NavigationLink(destination: PinochleGameView(game: game)) {
             Text(game.gameName)
           }
         }
