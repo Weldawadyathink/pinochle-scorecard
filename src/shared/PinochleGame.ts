@@ -1,6 +1,6 @@
 import { PinochleRound } from "./PinochleRound.ts";
 
-// @ts-expect-error
+// @ts-expect-error project does not include types
 import { generate } from "project-namer";
 
 export class PinochleGame {
@@ -64,7 +64,7 @@ export class PinochleGame {
       typeof json === "string" || json instanceof String
         ? JSON.parse(json as string)
         : json;
-    let game = new PinochleGame();
+    const game = new PinochleGame();
     game.rounds = obj.rounds.map((round: any) => new PinochleRound(round));
     game.currentRoundIndex = obj.currentRoundIndex;
     game.teamAName = obj.teamAName;

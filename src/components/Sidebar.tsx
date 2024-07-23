@@ -38,11 +38,11 @@ function ConnectToGame({ onSetGameName, children }: ConnectToGameProps) {
     setIsGameNotFound(false);
     const apiUrl =
       import.meta.env.MODE === "development"
-        ? "http://localhost:8787"
+        ? "http://localhost:8000"
         : "https://api.pinochle.spenserbushey.com";
     const api = fetcher({ base: apiUrl });
     api
-      .get(`/v1/game/connect/${name}`)
+      .get(`/v1/game/status/${name}`)
       .then(() => {
         onSetGameName(name);
         setOpen(false);
