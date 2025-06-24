@@ -1,0 +1,23 @@
+{
+  "name": "pinochle-scorecard",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "packageManager": "pnpm@10.12.1",
+  "dependencies": {
+    "@tanstack/react-router": "^1.121.34",
+    "@tanstack/react-start": "^1.121.35",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "vite": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "typescript": "^5.8.3",
+    "vite-tsconfig-paths": "^5.1.4"
+  }
+}
