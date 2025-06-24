@@ -1,0 +1,8 @@
+nodeLinker: hoisted
+
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - '@tailwindcss/oxide'
+  - esbuild
+
+packageImportMethod: clone-or-copy
